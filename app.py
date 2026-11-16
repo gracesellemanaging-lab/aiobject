@@ -32,6 +32,33 @@ SESSION_PATTERN = re.compile(r"[^a-zA-Z0-9_-]")
 REFERENCE_KEY_PATTERN = re.compile(r"[^a-zA-Z0-9_-]")
 
 
+ALLOWED_ORIGINS = {
+    origin.strip()
+    for origin in os.environ.get(
+        "ALLOWED_ORIGINS", "https://gracesellemanaging-lab.github.io"
+    ).split(",")
+    if origin.strip()
+}
+
+
+@app.before_request
+def handle_preflight():
+    if request.method == "OPTIONS":
+        return app.make_default_options_response()
+    return None
+
+
+@app.after_request
+def add_cors(response):
+    origin = request.headers.get("Origin")
+    if origin and ("*" in ALLOWED_ORIGINS or origin in ALLOWED_ORIGINS):
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Vary"] = "Origin"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, DELETE, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return response
+
+
 @app.after_request
 def add_headers(response):
     if request.path.startswith("/api/"):

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1b30"/>
+      <stop offset="1" stop-color="#050c17"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.45" r="0.55">
+      <stop offset="0" stop-color="#3ee9ff" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#3ee9ff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="line" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#3ee9ff" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#3ee9ff" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#3ee9ff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="600" fill="url(#bg)"/>
+  <rect width="900" height="600" fill="url(#glow)"/>
+  <g stroke="#3ee9ff" stroke-opacity="0.16" stroke-width="1">
+    <path d="M0 150h900M0 300h900M0 450h900M150 0v600M300 0v600M450 0v600M600 0v600M750 0v600"/>
+  </g>
+  <g fill="none" stroke="#3ee9ff" stroke-width="2.4" stroke-linecap="round" stroke-opacity="0.85">
+    <path d="M300 260v-28a14 14 0 0 1 14-14h28"/>
+    <path d="M558 218h28a14 14 0 0 1 14 14v28"/>
+    <path d="M600 340v28a14 14 0 0 1-14 14h-28"/>
+    <path d="M342 382h-28a14 14 0 0 1-14-14v-28"/>
+  </g>
+  <g fill="none" stroke="#3ee9ff" stroke-width="2.6">
+    <path d="M372 300c24-41 58-62 98-62s74 21 98 62c-24 41-58 62-98 62s-74-21-98-62Z" opacity="0.9"/>
+    <circle cx="470" cy="300" r="27" opacity="0.55"/>
+    <circle cx="470" cy="300" r="8" fill="#3ee9ff"/>
+  </g>
+  <path d="M280 418h380" stroke="url(#line)" stroke-width="2"/>
+  <text x="450" y="462" fill="#9fc4dc" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="600" text-anchor="middle">Visual reference unavailable</text>
+  <text x="450" y="498" fill="#5d7b96" font-family="Segoe UI, Arial, sans-serif" font-size="17" text-anchor="middle">VISIONSCAN · WIKIMEDIA REFERENCES</text>
+</svg>

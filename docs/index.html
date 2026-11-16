@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#050b16">
+  <title>AI Object Visualizer · See It. Scan It. Understand It.</title>
+  <meta name="description" content="Real-time computer vision for people, objects, fruit, gestures and expressions, with trustworthy online references.">
+  <link rel="icon" href="static/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body data-default-confidence="35">
+  <div class="ambient" aria-hidden="true">
+    <div class="ambient-grid"></div>
+    <div class="orb orb-one"></div>
+    <div class="orb orb-two"></div>
+    <div class="orb orb-three"></div>
+    <div class="noise"></div>
+  </div>
+
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="#dashboard" data-view-link="dashboard" aria-label="AI Object Visualizer dashboard">
+      <span class="brand-mark">
+        <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
+          <path d="M6 15V9a3 3 0 0 1 3-3h6M33 6h6a3 3 0 0 1 3 3v6M42 33v6a3 3 0 0 1-3 3h-6M15 42H9a3 3 0 0 1-3-3v-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M15 24c2.2-3.7 5.3-5.6 9-5.6s6.8 1.9 9 5.6c-2.2 3.7-5.3 5.6-9 5.6s-6.8-1.9-9-5.6Z" stroke="currentColor" stroke-width="2"/>
+          <circle cx="24" cy="24" r="2.7" fill="currentColor"/>
+        </svg>
+      </span>
+      <span class="brand-text">
+        <strong>Vision<span>Scan</span></strong>
+        <small>AI Object Visualizer</small>
+      </span>
+    </a>
+
+    <nav class="nav" aria-label="Main navigation">
+      <span class="nav-label">Workspace</span>
+      <button class="nav-item" data-view-link="dashboard">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="3.5" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.7"/><rect x="3.5" y="13.5" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="13.5" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.7"/></svg>
+        </span>
+        <span>Dashboard</span>
+      </button>
+      <span class="nav-label">Scanners</span>
+      <button class="nav-item" data-mode-link="smart">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v3M12 18v3M4.2 7.5l2.6 1.5M17.2 15l2.6 1.5M4.2 16.5l2.6-1.5M17.2 9l2.6-1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="3.4" stroke="currentColor" stroke-width="1.7"/><path d="M6.5 5.8 5 4.3M17.5 5.8 19 4.3M6.5 18.2 5 19.7M17.5 18.2 19 19.7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        </span>
+        <span>Smart Scan</span>
+      </button>
+      <button class="nav-item" data-mode-link="person">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.7"/><path d="M5 20c.7-3.3 3.4-5.4 7-5.4s6.3 2.1 7 5.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M3 6V4.5A1.5 1.5 0 0 1 4.5 3H6M18 3h1.5A1.5 1.5 0 0 1 21 4.5V6M21 18v1.5a1.5 1.5 0 0 1-1.5 1.5H18M6 21H4.5A1.5 1.5 0 0 1 3 19.5V18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </span>
+        <span>Person Detection</span>
+      </button>
+      <button class="nav-item" data-mode-link="object">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+        </span>
+        <span>Object Detection</span>
+      </button>
+      <button class="nav-item" data-mode-link="fruit">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8.2c3.2-2.1 7-.1 7 4 0 4.4-3.6 8-7 8s-7-3.6-7-8c0-4.1 3.8-6.1 7-4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 8c0-2.3 1.6-4.2 4-4.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M12 8c-.5-1.6-1.7-2.6-3.4-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </span>
+        <span>Fruit Recognition</span>
+      </button>
+      <button class="nav-item" data-mode-link="gesture">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8.5 12V6.6a1.6 1.6 0 1 1 3.2 0V11M11.7 10.4V5.4a1.6 1.6 0 1 1 3.2 0v5M14.9 10.8V6.8a1.6 1.6 0 1 1 3.2 0v6.7c0 3.9-2.7 6.4-6.1 6.4-2.4 0-4.2-1.2-5.3-3.2L5 13.4a1.7 1.7 0 0 1 2.9-1.7l.6 1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span>Gesture Scanner</span>
+      </button>
+      <span class="nav-label">AI Tools</span>
+      <button class="nav-item" data-view-link="similar">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6" stroke="currentColor" stroke-width="1.7"/><path d="m15 15 4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M8.2 10.5h4.6M10.5 8.2v4.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M4 19.5c1-2.2 2.6-3.4 4.6-3.4M20 4.5c-1 2.2-2.6 3.4-4.6 3.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </span>
+        <span>Visual Similarity Search</span>
+      </button>
+      <button class="nav-item" data-camera-link="camera">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="m16 10 5-3v10l-5-3" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="9.5" cy="12" r="2.2" stroke="currentColor" stroke-width="1.4"/></svg>
+        </span>
+        <span>Camera Detection</span>
+      </button>
+      <span class="nav-label">Library</span>
+      <button class="nav-item" data-view-link="history">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M4 4v4.7h4.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4.4l2.8 1.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        </span>
+        <span>Analysis History</span>
+      </button>
+      <button class="nav-item" data-view-link="settings">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/><path d="M19 13.5a7.8 7.8 0 0 0 0-3l2-1.5-2-3.4-2.3 1a8.2 8.2 0 0 0-2.6-1.5L13.7 2h-3.4l-.4 3.1a8.2 8.2 0 0 0-2.6 1.5l-2.3-1-2 3.4 2 1.5a7.8 7.8 0 0 0 0 3l-2 1.5 2 3.4 2.3-1a8.2 8.2 0 0 0 2.6 1.5l.4 3.1h3.4l.4-3.1a8.2 8.2 0 0 0 2.6-1.5l2.3 1 2-3.4-2-1.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </span>
+        <span>Settings</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="system-card">
+        <div class="system-head">
+          <span class="pulse-dot" id="system-dot"></span>
+          <span id="system-state">Checking AI engine</span>
+        </div>
+        <div class="model-list" id="model-list"></div>
+        <div class="system-meta">
+          <span>CPU engine</span>
+          <span id="system-uptime">--</span>
+        </div>
+      </div>
+      <p class="sidebar-note">Runs locally on your machine. No cloud uploads.</p>
+    </div>
+  </aside>
+
+  <div class="sidebar-scrim" id="sidebar-scrim"></div>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="icon-button menu-toggle" id="menu-toggle" aria-label="Open navigation">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <div class="breadcrumbs">
+        <span>VisionScan</span>
+        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m8 5 5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <strong id="page-title">Dashboard</strong>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-button theme-toggle" id="theme-toggle" type="button" aria-label="Switch colour theme" title="Toggle dark / light theme">
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.4A8 8 0 1 1 9.6 4a6.5 6.5 0 0 0 10.4 10.4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.7"/><path d="M12 2.5v2.2M12 19.3v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+        <span class="status-pill" id="ai-status-pill">
+          <span class="pulse-dot"></span>
+          <span id="ai-status-text">Connecting</span>
+        </span>
+        <span class="topbar-chip">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="6" y="7" width="12" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 10h3M3 14h3M18 10h3M18 14h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          Local AI
+        </span>
+      </div>
+    </header>
+
+    <div class="content">
+      <section class="view" id="view-dashboard" aria-labelledby="dashboard-title">
+        <div class="hero">
+          <div class="hero-copy">
+            <span class="eyebrow"><span class="eyebrow-line"></span>Real-time computer vision</span>
+            <h1 id="dashboard-title">See It. <span>Scan It.</span> Understand It.</h1>
+            <p>Point your camera or drop in a photo. VisionScan identifies people, everyday objects, fruit, gestures and expressions, then explains what it sees and shows a trusted visual reference.</p>
+            <div class="hero-actions">
+              <button class="button primary" id="hero-start">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15.5 7.5 21 12l-5.5 4.5v-9Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><rect x="3" y="5" width="11" height="14" rx="2.5" stroke="currentColor" stroke-width="1.7"/></svg>
+                Launch Smart Scan
+              </button>
+              <button class="button ghost" id="hero-upload">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                Upload an Image
+              </button>
+            </div>
+            <div class="hero-tags">
+              <span>YOLOv8n</span>
+              <span>FairFace</span>
+              <span>MediaPipe</span>
+              <span>Wikimedia references</span>
+            </div>
+          </div>
+          <div class="hero-visual" aria-hidden="true">
+            <div class="orbit orbit-a"></div>
+            <div class="orbit orbit-b"></div>
+            <div class="orbit orbit-c"></div>
+            <div class="core">
+              <div class="core-ring"></div>
+              <div class="core-eye">
+                <svg viewBox="0 0 64 64" fill="none"><path d="M8 32c5.9-9.4 13.4-14.1 24-14.1S50.1 22.6 56 32c-5.9 9.4-13.4 14.1-24 14.1S13.9 41.4 8 32Z" stroke="currentColor" stroke-width="2.2"/><circle cx="32" cy="32" r="6" fill="currentColor"/><circle cx="32" cy="32" r="12" stroke="currentColor" stroke-width="1.2" opacity=".5"/></svg>
+              </div>
+              <span class="core-label">NEURAL VISION</span>
+            </div>
+            <span class="float-chip chip-one">Person · 96%</span>
+            <span class="float-chip chip-two">Apple · 91%</span>
+            <span class="float-chip chip-three">Smile · 88%</span>
+            <span class="float-chip chip-four">Thumbs Up</span>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card">
+            <div class="stat-icon cyan">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/></svg>
+            </div>
+            <div><span class="stat-label">Saved scans</span><strong id="stat-scans">0</strong></div>
+            <span class="stat-trend">All time</span>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon blue">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+            </div>
+            <div><span class="stat-label">Total detections</span><strong id="stat-detections">0</strong></div>
+            <span class="stat-trend">All time</span>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon purple">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.7"/><path d="M5 20c.7-3.3 3.4-5.4 7-5.4s6.3 2.1 7 5.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            </div>
+            <div><span class="stat-label">People detected</span><strong id="stat-people">0</strong></div>
+            <span class="stat-trend">No identity data</span>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon green">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z" stroke="currentColor" stroke-width="1.7"/><path d="M12 7v5l3.2 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            </div>
+            <div><span class="stat-label">Last 24 hours</span><strong id="stat-24h">0</strong></div>
+            <span class="stat-trend">Detections</span>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon blue">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+            </div>
+            <div><span class="stat-label">Objects detected</span><strong id="stat-objects">0</strong></div>
+            <span class="stat-trend">All time</span>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon orange">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8.2c3.2-2.1 7-.1 7 4 0 4.4-3.6 8-7 8s-7-3.6-7-8c0-4.1 3.8-6.1 7-4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 8c0-2.3 1.6-4.2 4-4.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            </div>
+            <div><span class="stat-label">Fruits identified</span><strong id="stat-fruits">0</strong></div>
+            <span class="stat-trend">All time</span>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon pink">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M8.4 14.2c.8 1.3 2.1 2.2 3.6 2.2s2.8-.9 3.6-2.2M9 9.5h.01M15 9.5h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            </div>
+            <div><span class="stat-label">Expressions read</span><strong id="stat-expressions">0</strong></div>
+            <span class="stat-trend">Estimated</span>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon cyan">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            </div>
+            <div><span class="stat-label">Average confidence</span><strong id="stat-confidence">0%</strong></div>
+            <span class="stat-trend">Saved results</span>
+          </article>
+        </div>
+
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow"><span class="eyebrow-line"></span>Choose your lens</span>
+            <h2>Specialised scanners</h2>
+          </div>
+          <span class="section-hint">Each scanner uses a different AI pipeline</span>
+        </div>
+
+        <div class="scanner-cards">
+          <button class="scanner-tile" data-open-mode="person">
+            <span class="tile-icon persona">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.7"/><path d="M5 20c.7-3.3 3.4-5.4 7-5.4s6.3 2.1 7 5.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            </span>
+            <span class="tile-copy">
+              <strong>Person Detection</strong>
+              <small>Detect people, expressions and clearly-labeled age-range predictions.</small>
+            </span>
+            <span class="tile-arrow">→</span>
+          </button>
+          <button class="scanner-tile" data-open-mode="object">
+            <span class="tile-icon object">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="tile-copy">
+              <strong>Object Detection</strong>
+              <small>Recognise 80 everyday COCO object classes with confidence scores.</small>
+            </span>
+            <span class="tile-arrow">→</span>
+          </button>
+          <button class="scanner-tile" data-open-mode="fruit">
+            <span class="tile-icon fruit">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8.2c3.2-2.1 7-.1 7 4 0 4.4-3.6 8-7 8s-7-3.6-7-8c0-4.1 3.8-6.1 7-4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 8c0-2.3 1.6-4.2 4-4.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            </span>
+            <span class="tile-copy">
+              <strong>Fruit Recognition</strong>
+              <small>Identify common fruit and estimate quantity with honest coverage limits.</small>
+            </span>
+            <span class="tile-arrow">→</span>
+          </button>
+          <button class="scanner-tile" data-open-mode="gesture">
+            <span class="tile-icon gesture">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8.5 12V6.6a1.6 1.6 0 1 1 3.2 0V11M11.7 10.4V5.4a1.6 1.6 0 1 1 3.2 0v5M14.9 10.8V6.8a1.6 1.6 0 1 1 3.2 0v6.7c0 3.9-2.7 6.4-6.1 6.4-2.4 0-4.2-1.2-5.3-3.2L5 13.4a1.7 1.7 0 0 1 2.9-1.7l.6 1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="tile-copy">
+              <strong>Gesture Scanner</strong>
+              <small>Read posture, hand gestures and visible facial expressions.</small>
+            </span>
+            <span class="tile-arrow">→</span>
+          </button>
+        </div>
+
+        <div class="dashboard-grid">
+          <article class="panel activity-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">Activity</span>
+                <h3>Last seven days</h3>
+              </div>
+              <span class="panel-badge" id="week-total">0 detections</span>
+            </div>
+            <div class="chart" id="activity-chart" role="img" aria-label="Detections over the last seven days"></div>
+          </article>
+          <article class="panel recent-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">Recent</span>
+                <h3>Latest scans</h3>
+              </div>
+              <button class="text-button" data-view-link="history">View all</button>
+            </div>
+            <div class="recent-list" id="recent-list">
+              <div class="mini-empty">No saved scans yet. Start with Smart Scan.</div>
+            </div>
+          </article>
+          <article class="panel expression-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">Facial analysis</span>
+                <h3>Expression signals</h3>
+              </div>
+              <span class="panel-badge" id="expression-total">0 saved</span>
+            </div>
+            <div class="expression-list" id="expression-list">
+              <div class="mini-empty">Expression estimates appear after a Smart Scan or Person Detection scan.</div>
+            </div>
+          </article>
+        </div>
+
+        <div class="pipeline-strip">
+          <div class="pipeline-item"><span>01</span><div><strong>Localise</strong><small>YOLOv8n finds people and objects on your CPU.</small></div></div>
+          <div class="pipeline-item"><span>02</span><div><strong>Understand</strong><small>FairFace, MediaPipe and MobileNetV3 add context.</small></div></div>
+          <div class="pipeline-item"><span>03</span><div><strong>Explain</strong><small>Plain-language descriptions and honest limits.</small></div></div>
+          <div class="pipeline-item"><span>04</span><div><strong>Reference</strong><small>Curated Wikimedia images cached on your machine.</small></div></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-scanner" aria-labelledby="scan-title" hidden>
+        <div class="scanner-head">
+          <div>
+            <span class="eyebrow"><span class="eyebrow-line"></span><span id="scan-eyebrow">Smart Scan</span></span>
+            <h1 id="scan-title">Smart Scan</h1>
+            <p id="scan-desc">One pass for people, everyday objects and visible expressions.</p>
+          </div>
+          <div class="confidence-control">
+            <div class="confidence-label">
+              <span>Confidence threshold</span>
+              <strong id="scan-confidence-value">35%</strong>
+            </div>
+            <input type="range" id="scan-confidence" min="15" max="90" step="1" value="35" aria-label="Confidence threshold">
+          </div>
+        </div>
+
+        <div class="scanner-grid">
+          <div class="scanner-left">
+            <div class="stage-card">
+              <div class="stage" id="stage" data-kind="empty">
+                <video id="camera" autoplay playsinline muted></video>
+                <img id="upload-image" alt="Uploaded image preview">
+                <canvas id="overlay"></canvas>
+                <div class="stage-placeholder" id="stage-placeholder">
+                  <span class="placeholder-icon">
+                    <svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M12 25V17a5 5 0 0 1 5-5h8M39 12h8a5 5 0 0 1 5 5v8M52 39v8a5 5 0 0 1-5 5h-8M25 52h-8a5 5 0 0 1-5-5v-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="32" r="10" stroke="currentColor" stroke-width="2"/><circle cx="32" cy="32" r="3.4" fill="currentColor"/></svg>
+                  </span>
+                  <strong>Ready when you are</strong>
+                  <span>Start the camera or upload an image to begin scanning.</span>
+                  <div class="placeholder-actions">
+                    <button class="button primary small" id="placeholder-start">Start Camera</button>
+                    <button class="button ghost small" id="placeholder-upload">Upload Image</button>
+                  </div>
+                </div>
+                <div class="stage-topline">
+                  <span class="stage-badge" id="stage-badge">STANDBY</span>
+                  <span class="scan-spinner" id="scan-spinner" hidden><span></span>ANALYSING</span>
+                </div>
+                <span class="hud-corner top-left"></span>
+                <span class="hud-corner top-right"></span>
+                <span class="hud-corner bottom-left"></span>
+                <span class="hud-corner bottom-right"></span>
+                <div class="scanline" id="scanline"></div>
+              </div>
+              <div class="stage-toolbar">
+                <div class="toolbar-group">
+                  <button class="button primary" id="camera-start">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="m16 10 5-3v10l-5-3" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                    Start Camera
+                  </button>
+                  <button class="button ghost" id="camera-stop" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.7"/></svg>
+                    Stop
+                  </button>
+                </div>
+                <div class="toolbar-group">
+                  <button class="button ghost" id="scan-now">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12a8 8 0 1 1 2.4 5.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M4 17v-5h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Scan Now
+                  </button>
+                  <button class="button ghost" id="upload-trigger">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    Upload
+                  </button>
+                </div>
+                <span class="camera-state" id="camera-state"><span class="dot"></span>Camera idle</span>
+              </div>
+            </div>
+
+            <div class="scan-meta-row">
+              <span class="meta-chip"><span>Engine</span><strong id="meta-engine">--</strong></span>
+              <span class="meta-chip"><span>Inference</span><strong id="meta-inference">--</strong></span>
+              <span class="meta-chip"><span>Detections</span><strong id="meta-count">0</strong></span>
+              <span class="meta-chip"><span>Frame</span><strong id="meta-image">--</strong></span>
+            </div>
+
+            <div class="notes-box" id="scan-notes" hidden>
+              <span class="notes-icon">!</span>
+              <div id="scan-notes-list"></div>
+            </div>
+
+            <div class="capability-box">
+              <span class="capability-icon">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 11v5M12 7.6v.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </span>
+              <div>
+                <strong>What this scanner can and cannot do</strong>
+                <p id="capability-note">Detections are AI estimates. Unsupported categories are reported honestly instead of guessed.</p>
+              </div>
+            </div>
+          </div>
+
+          <aside class="results-panel">
+            <div class="results-head">
+              <div>
+                <span class="panel-kicker">Live analysis</span>
+                <h3>Detection Results <span id="result-count">0</span></h3>
+              </div>
+              <span class="results-status" id="results-status">Waiting</span>
+            </div>
+            <div class="scan-summary" id="scan-summary" hidden>
+              <span class="panel-kicker">AI image description</span>
+              <p id="scan-summary-text"></p>
+            </div>
+            <div class="results-list" id="results-list">
+              <div class="results-empty">
+                <span class="radar">
+                  <i></i><i></i><i></i>
+                </span>
+                <strong>No detections yet</strong>
+                <p>Start a camera session or upload a photo. Results appear here with descriptions and visual references.</p>
+              </div>
+            </div>
+            <div class="results-foot">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 5 6v5c0 4.4 2.9 7.6 7 10 4.1-2.4 7-5.6 7-10V6l-7-3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>All processing happens locally. Images are not sent to any cloud service.</span>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="view" id="view-similar" aria-labelledby="similar-title" hidden>
+        <div class="view-head">
+          <div>
+            <span class="eyebrow"><span class="eyebrow-line"></span>AI visual matching</span>
+            <h1 id="similar-title">Visual Similarity Search</h1>
+            <p>Upload a photo, social-media post or fruit picture. The AI describes the visual context, then ranks publicly licensed Wikimedia images by how visually similar they are. It never identifies or tracks people.</p>
+          </div>
+          <div class="view-actions">
+            <span class="status-pill ready"><span class="pulse-dot"></span>MobileNetV3 embeddings</span>
+          </div>
+        </div>
+
+        <div class="similar-layout">
+          <div class="similar-left">
+            <div class="panel similar-upload-panel">
+              <div class="panel-heading">
+                <div><span class="panel-kicker">Step 1</span><h3>Choose a picture</h3></div>
+                <span class="panel-badge">JPG · PNG · WEBP</span>
+              </div>
+              <div class="similar-drop" id="similar-drop" role="button" tabindex="0" aria-label="Upload an image for visual similarity search">
+                <input type="file" id="similar-file" accept="image/jpeg,image/png,image/webp" hidden>
+                <img id="similar-preview" alt="Image selected for similarity search" hidden>
+                <div class="similar-drop-copy" id="similar-drop-copy">
+                  <span class="placeholder-icon">
+                    <svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M12 25V17a5 5 0 0 1 5-5h8M39 12h8a5 5 0 0 1 5 5v8M52 39v8a5 5 0 0 1-5 5h-8M25 52h-8a5 5 0 0 1-5-5v-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="32" r="9" stroke="currentColor" stroke-width="2"/><path d="m37 37 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                  </span>
+                  <strong>Drop an image here</strong>
+                  <span>or click to browse. The file stays on your computer until it is analysed locally.</span>
+                </div>
+              </div>
+
+              <div class="similar-controls">
+                <label class="select-wrap compact">
+                  <span>Analysis focus</span>
+                  <select id="similar-mode">
+                    <option value="smart" selected>Auto · people, objects, expressions</option>
+                    <option value="person">People &amp; faces</option>
+                    <option value="object">Everyday objects</option>
+                    <option value="fruit">Fruit &amp; vegetables</option>
+                    <option value="gesture">Gestures &amp; posture</option>
+                  </select>
+                </label>
+                <label class="similar-query">
+                  <span>Optional visual keywords</span>
+                  <input type="text" id="similar-query" maxlength="80" placeholder="e.g. smiling person, red fruit, person holding a phone">
+                </label>
+                <button class="button primary" id="similar-search" type="button">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6" stroke="currentColor" stroke-width="1.7"/><path d="m15 15 4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                  Find Visually Similar Images
+                </button>
+                <button class="button ghost" id="similar-reset" type="button">Reset</button>
+              </div>
+
+              <div class="similar-progress" id="similar-progress" hidden>
+                <span class="scan-spinner"><span></span>ANALYSING VISUAL CONTEXT</span>
+                <div class="similar-progress-track"><span></span></div>
+                <small id="similar-progress-text">Running local AI models and comparing licensed images…</small>
+              </div>
+              <div class="notes-box" id="similar-error" hidden>
+                <span class="notes-icon">!</span>
+                <div id="similar-error-text"></div>
+              </div>
+            </div>
+
+            <div class="panel similar-description-panel" id="similar-description-panel" hidden>
+              <div class="panel-heading">
+                <div><span class="panel-kicker">AI image description</span><h3>What the models see</h3></div>
+                <span class="panel-badge" id="similar-analysis-badge">—</span>
+              </div>
+              <p class="similar-description-text" id="similar-description"></p>
+              <div class="detection-attrs" id="similar-tags"></div>
+              <p class="similar-queries" id="similar-queries"></p>
+            </div>
+          </div>
+
+          <div class="panel similar-results-panel">
+            <div class="results-head">
+              <div>
+                <span class="panel-kicker">Step 2</span>
+                <h3>Visually similar images <span id="similar-count">0</span></h3>
+              </div>
+              <span class="results-status" id="similar-status">Waiting</span>
+            </div>
+            <div class="similar-grid" id="similar-matches">
+              <div class="results-empty">
+                <span class="radar"><i></i><i></i><i></i></span>
+                <strong>No matches yet</strong>
+                <p>Upload a picture and run the search. Results include similarity scores, the matching image and a link to its original licensed source.</p>
+              </div>
+            </div>
+            <p class="similar-foot" id="similar-foot" hidden></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-history" aria-labelledby="history-title" hidden>
+        <div class="view-head">
+          <div>
+            <span class="eyebrow"><span class="eyebrow-line"></span>Local archive</span>
+            <h1 id="history-title">Analysis History</h1>
+            <p>Saved detections, thumbnails and metadata live in a local SQLite database on this computer.</p>
+          </div>
+          <div class="view-actions">
+            <button class="button ghost" id="history-refresh">Refresh</button>
+            <button class="button danger" id="history-clear">Clear History</button>
+          </div>
+        </div>
+
+        <div class="history-toolbar">
+          <label class="select-wrap">
+            <span>Filter by scanner</span>
+            <select id="history-filter">
+              <option value="">All scanners</option>
+              <option value="smart">Smart Scan</option>
+              <option value="person">Person</option>
+              <option value="object">Object</option>
+              <option value="fruit">Fruit</option>
+              <option value="gesture">Gesture</option>
+            </select>
+          </label>
+          <span class="toolbar-note" id="history-total">0 saved detections</span>
+        </div>
+
+        <div class="history-grid" id="history-list"></div>
+        <div class="empty-state" id="history-empty" hidden>
+          <span class="radar"><i></i><i></i><i></i></span>
+          <h3>No saved scans yet</h3>
+          <p>Run a scan and choose “Scan Now” or upload an image to archive results here.</p>
+          <button class="button primary small" data-view-link="dashboard">Go to Dashboard</button>
+        </div>
+        <div class="load-more-wrap">
+          <button class="button ghost" id="history-load-more" hidden>Load More</button>
+        </div>
+      </section>
+
+      <section class="view" id="view-settings" aria-labelledby="settings-title" hidden>
+        <div class="view-head">
+          <div>
+            <span class="eyebrow"><span class="eyebrow-line"></span>Preferences</span>
+            <h1 id="settings-title">Settings</h1>
+            <p>Tune the scanner, camera preview and how much detail you want to see.</p>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <form class="panel settings-panel" id="settings-form">
+            <div class="panel-heading">
+              <div><span class="panel-kicker">Scanning</span><h3>Detection preferences</h3></div>
+              <span class="panel-badge">Saved locally</span>
+            </div>
+
+            <div class="setting-row">
+              <div><strong>Confidence threshold</strong><small>Higher values show fewer, more certain detections.</small></div>
+              <div class="setting-range">
+                <input type="range" id="set-confidence" min="15" max="90" step="1" value="35">
+                <output id="set-confidence-value">35%</output>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div><strong>Continuous scan interval</strong><small>How often live camera frames are analysed.</small></div>
+              <label class="select-wrap compact">
+                <select id="set-interval">
+                  <option value="1200">1.2 seconds</option>
+                  <option value="1800" selected>1.8 seconds</option>
+                  <option value="2600">2.6 seconds</option>
+                  <option value="4000">4 seconds</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="setting-row">
+              <div><strong>Auto-save live detections</strong><small>Archive new results from continuous scanning.</small></div>
+              <label class="switch"><input type="checkbox" id="set-autosave" checked><span></span></label>
+            </div>
+
+            <div class="setting-row">
+              <div><strong>Mirror camera preview</strong><small>Useful for selfies; saved frames stay unmirrored.</small></div>
+              <label class="switch"><input type="checkbox" id="set-mirror" checked><span></span></label>
+            </div>
+
+            <div class="setting-row">
+              <div><strong>Show bounding boxes</strong><small>Draw detection boxes directly over the preview.</small></div>
+              <label class="switch"><input type="checkbox" id="set-boxes" checked><span></span></label>
+            </div>
+
+            <div class="setting-row">
+              <div><strong>Show descriptions</strong><small>Display plain-language explanations in result cards.</small></div>
+              <label class="switch"><input type="checkbox" id="set-descriptions" checked><span></span></label>
+            </div>
+
+            <div class="setting-row">
+              <div><strong>Colour theme</strong><small>Use the dark futuristic theme, a bright light theme, or follow your system.</small></div>
+              <label class="select-wrap compact">
+                <select id="set-theme">
+                  <option value="dark">Dark</option>
+                  <option value="light">Light</option>
+                  <option value="auto">System</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="settings-actions">
+              <button class="button primary" type="submit">Save Preferences</button>
+              <button class="button ghost" type="button" id="reset-settings">Reset Defaults</button>
+            </div>
+          </form>
+
+          <div class="settings-side">
+            <article class="panel about-panel">
+              <div class="panel-heading"><div><span class="panel-kicker">Pipeline</span><h3>Models on this machine</h3></div></div>
+              <div class="model-card"><span class="model-dot cyan"></span><div><strong>YOLOv8n</strong><small>80-class object and person localisation · CPU</small></div></div>
+              <div class="model-card"><span class="model-dot blue"></span><div><strong>FairFace ONNX</strong><small>Approximate age-range predictions from visible faces · no gender inference</small></div></div>
+              <div class="model-card"><span class="model-dot purple"></span><div><strong>MediaPipe</strong><small>Pose, hand and face landmark analysis for gestures</small></div></div>
+              <div class="model-card"><span class="model-dot orange"></span><div><strong>MobileNetV3</strong><small>ImageNet food and fruit refinement</small></div></div>
+            </article>
+
+            <article class="panel privacy-panel">
+              <div class="panel-heading"><div><span class="panel-kicker">Privacy</span><h3>Local by design</h3></div></div>
+              <ul class="privacy-list">
+                <li>Camera frames are analysed on this computer and are never uploaded to a cloud AI service.</li>
+                <li>History thumbnails are stored under <code>data/snapshots</code>; metadata lives in <code>data/history.db</code>.</li>
+                <li>Reference images come from Wikimedia and are cached locally as public educational content.</li>
+                <li>The app does not identify people by name, face or personal identity.</li>
+              </ul>
+              <div class="privacy-reset">
+                <button class="button danger small" id="settings-clear-history">Delete all history</button>
+              </div>
+            </article>
+
+            <article class="panel capability-panel">
+              <div class="panel-heading"><div><span class="panel-kicker">Honest limits</span><h3>What is not supported</h3></div></div>
+              <p id="settings-unsupported">Mango, grapes, watermelon, papaya and dragon fruit are not in the supported fruit vocabulary and will not be guessed. Objects outside the COCO training set are also not claimed as recognised.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <input type="file" id="file-input" accept="image/*" hidden>
+
+  <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+
+  <div class="modal" id="detail-modal" hidden aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal-close" data-close-modal aria-label="Close details">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <div class="modal-media">
+        <img id="modal-image" alt="Detection snapshot">
+        <span class="modal-category" id="modal-category">Object</span>
+      </div>
+      <div class="modal-body">
+        <div class="modal-heading">
+          <div>
+            <span class="panel-kicker" id="modal-scanner">Smart Scan</span>
+            <h2 id="modal-title">Detection</h2>
+          </div>
+          <span class="modal-confidence" id="modal-confidence">0%</span>
+        </div>
+        <div class="modal-meta" id="modal-meta"></div>
+        <p class="modal-desc" id="modal-desc"></p>
+        <div class="modal-attrs" id="modal-attrs"></div>
+        <p class="modal-note" id="modal-note" hidden></p>
+        <div class="modal-reference" id="modal-reference" hidden>
+          <span class="panel-kicker">Online visual reference</span>
+          <a id="modal-reference-link" href="#" target="_blank" rel="noopener noreferrer">
+            <img id="modal-reference-image" alt="Visual reference">
+            <span id="modal-reference-title">Wikimedia reference</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="static/js/core.js"></script>
+  <script src="static/js/scanner.js"></script>
+  <script src="static/js/views.js"></script>
+  <script src="static/js/similar.js"></script>
+</body>
+</html>
