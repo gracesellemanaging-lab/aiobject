@@ -9,7 +9,7 @@ import numpy as np
 
 from ai.attributes import ATTRIBUTE_DISCLAIMER, detect_faces, estimate_attributes, face_inside_box
 from ai.utils import dedupe_detections, make_detection
-from scanners.common import attach_references, result_payload, yolo_predict
+from scanners.common import attach_references, result_payload, yolo_predict, PERSON_CONFIDENCE_CAP
 
 
 def person_detection(image: np.ndarray, raw: dict, faces: list[dict], used_faces: set[int],
@@ -88,7 +88,7 @@ class PersonScanner:
         with ThreadPoolExecutor(max_workers=2) as pool:
             faces_future = pool.submit(detect_faces, image)
             raw_detections = yolo_predict(
-                image, confidence, live=live, class_names={"person"}, max_detections=max_detections
+                image, min(confidence, PERSON_CONFIDENCE_CAP), live=live, class_names={"person"}, max_detections=max_detections
             )
             faces = faces_future.result() if raw_detections else []
         used_faces: set[int] = set()

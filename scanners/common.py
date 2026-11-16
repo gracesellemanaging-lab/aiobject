@@ -14,6 +14,20 @@ from ai.registry import registry
 from ai.utils import image_size, normalized_box
 
 
+PERSON_CONFIDENCE_CAP = 0.40
+
+
+def yolo_predict_with_people(image: np.ndarray, confidence: float, **kwargs: Any) -> list[dict[str, Any]]:
+    """Run YOLO at a lower floor for people, then apply the user's threshold to other objects.
+
+    People are large, easy targets; a high slider value (e.g. 83%) otherwise hides them in
+    live camera frames.
+    """
+    floor = min(confidence, PERSON_CONFIDENCE_CAP)
+    raw = yolo_predict(image, floor, **kwargs)
+    return [d for d in raw if d["raw"] == "person" or d["confidence"] >= confidence]
+
+
 def yolo_predict(
     image: np.ndarray,
     confidence: float,

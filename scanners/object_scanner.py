@@ -11,7 +11,7 @@ from scanners.person_scanner import person_detection
 
 from ai.knowledge import lookup
 from ai.utils import dedupe_detections, make_detection
-from scanners.common import attach_references, result_payload, yolo_predict
+from scanners.common import attach_references, result_payload, yolo_predict_with_people
 
 
 class ObjectScanner:
@@ -22,7 +22,7 @@ class ObjectScanner:
         started = time.perf_counter()
         with ThreadPoolExecutor(max_workers=2) as pool:
             faces_future = pool.submit(detect_faces, image)
-            raw_detections = yolo_predict(image, confidence, live=live, max_detections=max(6, max_detections * 2))
+            raw_detections = yolo_predict_with_people(image, confidence, live=live, max_detections=max(6, max_detections * 2))
             faces = faces_future.result() if any(r["raw"] == "person" for r in raw_detections) else []
         used_faces: set[int] = set()
 

@@ -10,7 +10,7 @@ from ai.attributes import detect_faces
 from ai.expressions import analyze_expressions
 from ai.knowledge import GESTURE_INFO, lookup
 from ai.utils import dedupe_detections, make_detection
-from scanners.common import attach_references, result_payload, yolo_predict
+from scanners.common import attach_references, result_payload, yolo_predict_with_people
 from scanners.person_scanner import person_detection
 
 
@@ -22,7 +22,7 @@ class SmartScanner:
         started = time.perf_counter()
         with ThreadPoolExecutor(max_workers=2) as pool:
             faces_future = pool.submit(detect_faces, image)
-            raw_detections = yolo_predict(image, confidence, live=live, max_detections=max_detections)
+            raw_detections = yolo_predict_with_people(image, confidence, live=live, max_detections=max_detections)
             faces = faces_future.result() if raw_detections else []
         used_faces: set[int] = set()
 

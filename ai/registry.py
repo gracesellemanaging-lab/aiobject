@@ -5,6 +5,7 @@ import logging
 import os
 import threading
 import time
+from pathlib import Path
 from typing import Any
 
 import cv2
@@ -203,7 +204,18 @@ class ModelRegistry:
 
                 torch.set_num_threads(max(1, min(4, os.cpu_count() or 4)))
                 weights = MobileNet_V3_Small_Weights.DEFAULT
-                model = mobilenet_v3_small(weights=weights).eval()
+                ckpt_dir = Path(os.environ["TORCH_HOME"]) / "hub" / "checkpoints"
+                # A Git-LFS pointer (a few bytes) instead of the real .pth makes loading fail: remove it
+                # so torchvision downloads the genuine weights.
+                for bad in ckpt_dir.glob("*.pth"):
+                    if bad.stat().st_size < 1_000_000:
+                        bad.unlink(missing_ok=True)
+                try:
+                    model = mobilenet_v3_small(weights=weights).eval()
+                except Exception:  # corrupt download: delete and retry once
+                    for bad in ckpt_dir.glob("*.pth"):
+                        bad.unlink(missing_ok=True)
+                    model = mobilenet_v3_small(weights=weights).eval()
                 self._classifier = model
                 self._classifier_weights = weights
                 self._classifier_transform = weights.transforms()
