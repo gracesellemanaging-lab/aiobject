@@ -1,0 +1,76 @@
+{
+ "person": {
+  "key": "person",
+  "title": "Human",
+  "query": "person portrait",
+  "fetched_at": 1794402158.9961472,
+  "status": "ready",
+  "filename": "person.jpg",
+  "page_url": "https://en.wikipedia.org/wiki/Human",
+  "source": "Wikipedia"
+ },
+ "neutral": {
+  "key": "neutral",
+  "title": "Face of SpooSpa",
+  "query": "neutral facial expression",
+  "fetched_at": 1794402178.5974822,
+  "status": "ready",
+  "filename": "neutral.jpg",
+  "page_url": "https://commons.wikimedia.org/wiki/File:Face_of_SpooSpa.jpg",
+  "source": "Wikimedia Commons"
+ },
+ "standing": {
+  "key": "standing",
+  "title": "Person Standing (NIH BioArt 555)",
+  "query": "person standing",
+  "fetched_at": 1794402180.7410123,
+  "status": "ready",
+  "filename": "standing.jpg",
+  "page_url": "https://commons.wikimedia.org/wiki/File:Person_Standing_(NIH_BioArt_555).png",
+  "source": "Wikimedia Commons"
+ },
+ "bus": {
+  "key": "bus",
+  "title": "Setra S6 - Empresa Mosquera - 02",
+  "query": "Bus",
+  "fetched_at": 1794402183.2277486,
+  "status": "ready",
+  "filename": "bus.jpg",
+  "page_url": "https://commons.wikimedia.org/wiki/File:Setra_S6_-_Empresa_Mosquera_-_02.jpg",
+  "source": "Wikimedia Commons"
+ },
+ "smile": {
+  "key": "smile",
+  "title": "Smile",
+  "query": "person smiling",
+  "fetched_at": 1794635470.32523,
+  "status": "ready",
+  "filename": "smile.jpg",
+  "page_url": "https://en.wikipedia.org/wiki/Smile",
+  "source": "Wikipedia"
+ },
+ "tie": {
+  "key": "tie",
+  "title": "Necktie",
+  "query": "Necktie",
+  "fetched_at": 1794402203.6346006,
+  "status": "unavailable"
+ },
+ "thumbs-up": {
+  "key": "thumbs-up",
+  "title": "Thumb signal",
+  "query": "thumbs up gesture",
+  "fetched_at": 1794635513.8261333,
+  "status": "unavailable"
+ },
+ "pomegranate": {
+  "key": "pomegranate",
+  "title": "Pomegranate",
+  "query": "pomegranate fruit",
+  "fetched_at": 1794640469.9196312,
+  "status": "ready",
+  "filename": "pomegranate.jpg",
+  "page_url": "https://en.wikipedia.org/wiki/Pomegranate",
+  "source": "Wikipedia"
+ }
+}
