@@ -119,8 +119,17 @@ def scene_description(detections: list[dict[str, Any]], image_size: dict[str, in
     total_fruits = sum(group["count"] for group in fruits)
 
     if total_people:
+        gendered = [d for d in detections if d.get("category") == "People" and d.get("label") in {"Man", "Woman"}]
+        if total_people == 1 and gendered:
+            subject = f"a {gendered[0]['label'].lower()}"
+        else:
+            men = sum(1 for d in gendered if d["label"] == "Man")
+            women = sum(1 for d in gendered if d["label"] == "Woman")
+            subject = f"{total_people} {'person' if total_people == 1 else 'people'}"
+            if men or women:
+                subject += f" ({men} man, {women} woman)" if total_people == 1 else f" ({men} men, {women} women)"
         sentences.append(
-            f"The image shows {total_people} {'person' if total_people == 1 else 'people'}"
+            f"The image shows {subject}"
             + (" with a clearly visible face." if any(
                 (detection.get("attributes") or {}).get("face_visible") for detection in detections
                 if detection.get("category") == "People"

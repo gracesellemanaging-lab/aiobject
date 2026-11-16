@@ -21,7 +21,7 @@ const MODES = {
     title: "Person Detection",
     eyebrow: "Person Detection",
     description: "Locate people, visible expressions and clearly-labeled approximate age ranges.",
-    capability: "Age ranges are uncertain AI predictions computed from visible facial features. They are not exact ages, identity checks or demographic measurements. Gender is not inferred.",
+    capability: "Man/woman and age ranges are uncertain AI estimates computed from visible facial features. They are not facts, exact ages or identity checks.",
     engine: "YOLOv8n + FairFace (age)",
   },
   object: {

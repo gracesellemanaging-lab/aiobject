@@ -2,8 +2,12 @@
 from __future__ import annotations
 
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
+
+from ai.attributes import detect_faces
+from scanners.person_scanner import person_detection
 
 from ai.knowledge import lookup
 from ai.utils import dedupe_detections, make_detection
@@ -16,10 +20,19 @@ class ObjectScanner:
     def scan(self, image: np.ndarray, confidence: float = 0.35, *, live: bool = True,
              max_detections: int = 25) -> dict:
         started = time.perf_counter()
-        raw_detections = yolo_predict(image, confidence, live=live, max_detections=max(6, max_detections * 2))
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            faces_future = pool.submit(detect_faces, image)
+            raw_detections = yolo_predict(image, confidence, live=live, max_detections=max(6, max_detections * 2))
+            faces = faces_future.result() if any(r["raw"] == "person" for r in raw_detections) else []
+        used_faces: set[int] = set()
 
         detections = []
         for raw in raw_detections:
+            if raw["raw"] == "person":
+                detections.append(person_detection(
+                    image, raw, faces, used_faces, source="YOLOv8n · Object Detection person"
+                ))
+                continue
             info = lookup(raw["raw"])
             if info:
                 label = info["label"]

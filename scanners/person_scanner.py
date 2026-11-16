@@ -52,16 +52,26 @@ def person_detection(image: np.ndarray, raw: dict, faces: list[dict], used_faces
         "Age and man/woman are uncertain AI estimates from visible facial features, not facts. "
         "No identity is recognized or stored."
     )
+    gender = attributes.get("gender")
+    if gender == "woman":
+        label, reference_key = "Woman", "person"
+    elif gender == "man":
+        label, reference_key = "Man", "person"
+    else:
+        label, reference_key = "Person", "person"
+    if attributes.get("age_range") and gender:
+        details["summary"] = f"{label}, approx. age {attributes['age_range']}"
     return make_detection(
-        label="Person Detected",
+        label=label,
         category="People",
         confidence=raw["confidence"],
         bbox=box,
         description=(
-            "A human was localized. The system does not identify people by name "
-            "or personal identity."
+            (f"A {label.lower()} was detected from visible facial features (AI estimate). "
+             if gender else "A human was localized. ")
+            + "The system does not identify people by name or personal identity."
         ),
-        reference_key="person",
+        reference_key=reference_key,
         source=source,
         attributes=attributes,
         details=details,
