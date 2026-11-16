@@ -628,8 +628,10 @@
               <div><strong>Continuous scan interval</strong><small>How often live camera frames are analysed.</small></div>
               <label class="select-wrap compact">
                 <select id="set-interval">
+                  <option value="400">0.4 seconds (fastest)</option>
+                  <option value="800" selected>0.8 seconds</option>
                   <option value="1200">1.2 seconds</option>
-                  <option value="1800" selected>1.8 seconds</option>
+                  <option value="1800">1.8 seconds</option>
                   <option value="2600">2.6 seconds</option>
                   <option value="4000">4 seconds</option>
                 </select>
@@ -677,7 +679,7 @@
             <article class="panel about-panel">
               <div class="panel-heading"><div><span class="panel-kicker">Pipeline</span><h3>Models on this machine</h3></div></div>
               <div class="model-card"><span class="model-dot cyan"></span><div><strong>YOLOv8n</strong><small>80-class object and person localisation · CPU</small></div></div>
-              <div class="model-card"><span class="model-dot blue"></span><div><strong>FairFace ONNX</strong><small>Approximate age-range predictions from visible faces · no gender inference</small></div></div>
+              <div class="model-card"><span class="model-dot blue"></span><div><strong>FairFace ONNX</strong><small>Approximate age-range and man/woman estimates from visible faces · no identity recognition</small></div></div>
               <div class="model-card"><span class="model-dot purple"></span><div><strong>MediaPipe</strong><small>Pose, hand and face landmark analysis for gestures</small></div></div>
               <div class="model-card"><span class="model-dot orange"></span><div><strong>MobileNetV3</strong><small>ImageNet food and fruit refinement</small></div></div>
             </article>

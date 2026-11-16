@@ -135,7 +135,7 @@ class ModelRegistry:
                 import onnxruntime as ort
 
                 options = ort.SessionOptions()
-                options.intra_op_num_threads = 2
+                options.intra_op_num_threads = max(2, min(4, os.cpu_count() or 2))
                 options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
                 self._fairface = ort.InferenceSession(
                     str(FAIRFACE_MODEL),

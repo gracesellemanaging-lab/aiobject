@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 
@@ -19,8 +20,10 @@ class SmartScanner:
     def scan(self, image: np.ndarray, confidence: float = 0.32, *, live: bool = True,
              max_detections: int = 25) -> dict:
         started = time.perf_counter()
-        raw_detections = yolo_predict(image, confidence, live=live, max_detections=max_detections)
-        faces = detect_faces(image) if raw_detections else []
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            faces_future = pool.submit(detect_faces, image)
+            raw_detections = yolo_predict(image, confidence, live=live, max_detections=max_detections)
+            faces = faces_future.result() if raw_detections else []
         used_faces: set[int] = set()
 
         detections = []

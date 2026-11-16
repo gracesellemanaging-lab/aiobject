@@ -8,9 +8,11 @@ from .registry import registry
 from .utils import clamp_box, normalized_box
 
 AGE_LABELS = ["0-2", "3-9", "10-19", "20-29", "30-39", "40-49", "50-59", "60-69", "70+"]
+GENDER_LABELS = ["man", "woman"]  # FairFace gender head order: Male, Female
+GENDER_MIN_CONFIDENCE = 0.6
 ATTRIBUTE_DISCLAIMER = (
-    "Uncertain age-range prediction from visible facial features. This is not "
-    "identity recognition and must not be treated as an exact age or demographic measurement."
+    "Uncertain age-range and man/woman estimates from visible facial features. This is not "
+    "identity recognition and must not be treated as an exact age or a statement about who someone is."
 )
 
 
@@ -54,10 +56,10 @@ def _softmax(values: np.ndarray) -> np.ndarray:
 
 
 def estimate_attributes(image: np.ndarray, face: dict) -> dict:
-    """Predict an approximate age range for a detected face.
+    """Predict an approximate age range and man/woman estimate for a detected face.
 
-    Only the age head of FairFace is used. Gender presentation, identity and
-    other personal attributes are intentionally not inferred.
+    The age and gender heads of FairFace are used. The race head is ignored and
+    identity is never inferred.
     """
     height, width = image.shape[:2]
     x1, y1, x2, y2 = face["pixels"]
@@ -77,17 +79,29 @@ def estimate_attributes(image: np.ndarray, face: dict) -> dict:
             std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
             rgb = (rgb - mean) / std
             blob = np.transpose(rgb, (2, 0, 1))[None].astype(np.float32)
-            outputs = session.run(None, {session.get_inputs()[0].name: blob})
+            names = [item.name for item in session.get_outputs()]
+            outputs = dict(zip(names, session.run(None, {session.get_inputs()[0].name: blob})))
     except Exception as exc:  # noqa: BLE001 - attributes are optional
         return {"available": False, "reason": f"Age model unavailable: {exc}"}
 
-    age_logits = np.asarray(outputs[-1][0], dtype=np.float64)
+    age_logits = np.asarray(outputs["age_output"][0], dtype=np.float64)
     age_probs = _softmax(age_logits)
     age_index = int(np.argmax(age_probs))
     age_confidence = float(age_probs[age_index])
 
+    gender = None
+    gender_confidence = 0.0
+    if "gender_output" in outputs:
+        gender_probs = _softmax(np.asarray(outputs["gender_output"][0], dtype=np.float64))
+        gender_index = int(np.argmax(gender_probs))
+        gender_confidence = float(gender_probs[gender_index])
+        if gender_confidence >= GENDER_MIN_CONFIDENCE:
+            gender = GENDER_LABELS[gender_index]
+
     return {
         "available": True,
+        "gender": gender,
+        "gender_confidence": round(gender_confidence, 3),
         "age_range": AGE_LABELS[age_index],
         "age_confidence": round(age_confidence, 3),
         "face_confidence": face["score"],

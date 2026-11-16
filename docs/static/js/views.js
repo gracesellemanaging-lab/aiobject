@@ -453,7 +453,7 @@ function bindEvents() {
     persistSettings();
   });
   els.setInterval.addEventListener("change", () => {
-    settings.interval = clamp(Number(els.setInterval.value) || 1800, 1200, 6000);
+    settings.interval = clamp(Number(els.setInterval.value) || 800, 400, 6000);
     persistSettings();
     applySettings(false);
   });

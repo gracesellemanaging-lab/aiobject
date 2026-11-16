@@ -2,7 +2,7 @@
 
 const DEFAULT_SETTINGS = {
   confidence: Number(document.body.dataset.defaultConfidence) || 35,
-  interval: 1800,
+  interval: 800,
   autoSave: true,
   mirror: true,
   boxes: true,
@@ -256,7 +256,7 @@ function loadSettings() {
   }
   const next = { ...DEFAULT_SETTINGS, ...stored };
   next.confidence = clamp(Number(next.confidence) || DEFAULT_SETTINGS.confidence, 15, 90);
-  next.interval = clamp(Number(next.interval) || DEFAULT_SETTINGS.interval, 1200, 6000);
+  next.interval = clamp(Number(next.interval) || DEFAULT_SETTINGS.interval, 400, 6000);
   next.autoSave = Boolean(next.autoSave);
   next.mirror = Boolean(next.mirror);
   next.boxes = Boolean(next.boxes);

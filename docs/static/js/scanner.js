@@ -63,10 +63,12 @@ async function startCamera() {
       audio: false,
       video: {
         facingMode: { ideal: "environment" },
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+        frameRate: { ideal: 30 },
       },
     });
+    await tuneCameraTrack(stream);
     if (epoch !== state.epoch) {
       stream.getTracks().forEach((track) => track.stop());
       return;
@@ -160,23 +162,93 @@ function captureFrameSync() {
   canvas.height = Math.max(1, Math.round(height * ratio));
   canvas.getContext("2d").drawImage(els.camera, 0, 0, canvas.width, canvas.height);
   try {
-    return canvas.toDataURL("image/jpeg", 0.84);
+    return canvas.toDataURL("image/jpeg", 0.92);
   } catch {
     return null;
   }
 }
 
-function captureFrameBlob() {
+// Ask the camera for continuous autofocus/exposure where the device supports it.
+async function tuneCameraTrack(stream) {
+  const track = stream.getVideoTracks()[0];
+  if (!track || !track.getCapabilities) return;
+  try {
+    const caps = track.getCapabilities();
+    const advanced = [];
+    if (caps.focusMode && caps.focusMode.includes("continuous")) advanced.push({ focusMode: "continuous" });
+    if (caps.exposureMode && caps.exposureMode.includes("continuous")) advanced.push({ exposureMode: "continuous" });
+    if (caps.whiteBalanceMode && caps.whiteBalanceMode.includes("continuous")) advanced.push({ whiteBalanceMode: "continuous" });
+    if (advanced.length) await track.applyConstraints({ advanced });
+  } catch {
+    /* unsupported constraint: keep browser defaults */
+  }
+}
+
+// Laplacian variance on a small grayscale copy: low values mean a blurry frame.
+let sharpnessPeak = 0;
+let skippedBlurry = 0;
+function frameSharpness(video) {
+  const size = 160;
+  const canvas = document.createElement("canvas");
+  const ratio = size / Math.max(video.videoWidth, video.videoHeight);
+  const w = Math.max(8, Math.round(video.videoWidth * ratio));
+  const h = Math.max(8, Math.round(video.videoHeight * ratio));
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  ctx.drawImage(video, 0, 0, w, h);
+  const { data } = ctx.getImageData(0, 0, w, h);
+  const gray = new Float32Array(w * h);
+  for (let i = 0; i < gray.length; i += 1) {
+    gray[i] = 0.299 * data[i * 4] + 0.587 * data[i * 4 + 1] + 0.114 * data[i * 4 + 2];
+  }
+  let sum = 0;
+  let sumSq = 0;
+  let count = 0;
+  for (let y = 1; y < h - 1; y += 1) {
+    for (let x = 1; x < w - 1; x += 1) {
+      const i = y * w + x;
+      const lap = 4 * gray[i] - gray[i - 1] - gray[i + 1] - gray[i - w] - gray[i + w];
+      sum += lap;
+      sumSq += lap * lap;
+      count += 1;
+    }
+  }
+  const mean = sum / count;
+  return sumSq / count - mean * mean;
+}
+
+function captureFrameBlob(options = {}) {
   const width = els.camera.videoWidth;
   const height = els.camera.videoHeight;
   if (!width || !height || els.camera.readyState < 2) return Promise.resolve(null);
+
+  // Live scans skip motion-blurred frames (never more than 2 in a row); manual scans always send.
+  if (!options.manual) {
+    try {
+      const sharpness = frameSharpness(els.camera);
+      sharpnessPeak = Math.max(sharpness, sharpnessPeak * 0.97);
+      if (sharpness < sharpnessPeak * 0.4 && skippedBlurry < 2) {
+        skippedBlurry += 1;
+        return Promise.resolve(null);
+      }
+      skippedBlurry = 0;
+    } catch {
+      /* sharpness check is best effort */
+    }
+  }
+
   const canvas = document.createElement("canvas");
-  const ratio = Math.min(1, 960 / Math.max(width, height));
+  const longEdge = options.manual ? 1280 : 960;
+  const ratio = Math.min(1, longEdge / Math.max(width, height));
   canvas.width = Math.max(1, Math.round(width * ratio));
   canvas.height = Math.max(1, Math.round(height * ratio));
-  canvas.getContext("2d").drawImage(els.camera, 0, 0, canvas.width, canvas.height);
+  const context = canvas.getContext("2d");
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = "high";
+  context.drawImage(els.camera, 0, 0, canvas.width, canvas.height);
   return new Promise((resolve) => {
-    canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.82);
+    canvas.toBlob((blob) => resolve(blob), "image/jpeg", options.manual ? 0.92 : 0.88);
   });
 }
 
@@ -217,7 +289,7 @@ async function runCameraScan(options = {}) {
   const epoch = state.epoch;
   const expectedMode = state.mode;
   try {
-    const blob = await captureFrameBlob();
+    const blob = await captureFrameBlob({ manual: Boolean(options.manual) });
     if (!blob || epoch !== state.epoch) return null;
     const shouldSave = Boolean(options.manual) || (settings.autoSave && Date.now() - state.lastSaveAt > 30000);
     const result = await sendScan(blob, "camera", shouldSave);
@@ -407,6 +479,7 @@ function attributeChips(detection, full) {
     chips.push(`<span class="attr-chip">${esc(label)} <strong>${esc(value)}</strong></span>`);
   };
   if (detection.category === "People") {
+    if (attributes.gender) add("Gender (AI)", attributes.gender === "woman" ? "Woman" : "Man");
     if (attributes.age_range) add("Age prediction (AI)", attributes.age_range);
     if (typeof attributes.face_visible === "boolean") add("Face", attributes.face_visible ? "visible" : "not visible");
     if (attributes.age_confidence) add("Age confidence", formatConfidence(attributes.age_confidence));
