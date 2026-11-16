@@ -9,3 +9,6 @@ torch>=2.2
 torchvision>=0.17
 onnxruntime>=1.17
 mediapipe>=0.10.14
+ftfy
+regex
+git+https://github.com/ultralytics/CLIP.git

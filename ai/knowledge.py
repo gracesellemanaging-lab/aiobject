@@ -247,7 +247,7 @@ CAPABILITY_NOTES = {
 SCANNER_META = {
     "smart": {"title": "Smart Scan", "engine": "YOLOv8n + FairFace (age + gender) + MediaPipe Face", "note": CAPABILITY_NOTES["smart"]},
     "person": {"title": "Person Detection", "engine": "YOLOv8n + FairFace (age + gender)", "note": CAPABILITY_NOTES["person"]},
-    "object": {"title": "Object Detection", "engine": "YOLOv8n · 80 COCO classes", "note": CAPABILITY_NOTES["object"]},
+    "object": {"title": "Object Detection", "engine": "YOLOv8n (COCO) + YOLO-World (extra objects)", "note": CAPABILITY_NOTES["object"]},
     "fruit": {"title": "Fruit Recognition", "engine": "YOLOv8n + MobileNetV3", "note": CAPABILITY_NOTES["fruit"]},
     "gesture": {"title": "Gesture Scanner", "engine": "MediaPipe Pose · Hands · Face", "note": CAPABILITY_NOTES["gesture"]},
 }

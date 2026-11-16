@@ -17,6 +17,7 @@ from .config import (
     FACE_DETECTOR_PROTO,
     FACE_LANDMARKER_MODEL,
     YOLO_MODEL,
+    WORLD_MODEL,
 )
 from .downloads import ensure_models
 
@@ -50,6 +51,10 @@ class ModelRegistry:
         self._classifier: Any = None
         self._classifier_weights: Any = None
         self._classifier_transform: Any = None
+        self._world: Any = None
+        self.world_lock = threading.RLock()
+        self.world_state = "idle"
+        self.world_error: str | None = None
 
         self._state = {key: "idle" for key in _MODEL_KEYS}
         self._errors: dict[str, str] = {}
@@ -78,6 +83,7 @@ class ModelRegistry:
                 logger.exception("Failed to initialize %s", key)
                 self._state[key] = "error"
                 self._errors[key] = str(exc)
+        self.world()  # optional extra-object detector; never blocks the core models
 
     def _ready(self, key: str) -> None:
         self._state[key] = "ready"
@@ -222,6 +228,31 @@ class ModelRegistry:
                 self._ready("classifier")
         return self._classifier, self._classifier_weights, self._classifier_transform
 
+    # ------------------------------------------------------- open vocabulary
+    def world(self):
+        """YOLO-World for objects outside COCO. Optional: returns None if unavailable."""
+        if self._world is not None:
+            return self._world
+        if self.world_state == "error":
+            return None
+        with self._init_lock:
+            if self._world is None and self.world_state != "error":
+                try:
+                    from ultralytics import YOLOWorld
+
+                    from .extra_objects import PROMPTS
+
+                    self.world_state = "loading"
+                    model = YOLOWorld(str(WORLD_MODEL))
+                    model.set_classes(PROMPTS)
+                    self._world = model
+                    self.world_state = "ready"
+                except Exception as exc:  # noqa: BLE001 - extras are optional
+                    self.world_state = "error"
+                    self.world_error = str(exc)
+                    logger.exception("YOLO-World unavailable")
+        return self._world
+
     # ----------------------------------------------------------------- health
     def status(self) -> dict[str, Any]:
         models = []
@@ -239,6 +270,7 @@ class ModelRegistry:
             "models": models,
             "uptime_seconds": round(time.time() - self._started_at, 1),
             "device": "CPU",
+            "extra_objects": {"state": self.world_state, "error": self.world_error},
         }
 
     def close(self) -> None:

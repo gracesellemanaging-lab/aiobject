@@ -20,6 +20,7 @@ YOLO_MODEL = MODELS_DIR / "yolov8n.pt"
 FACE_DETECTOR_PROTO = MODELS_DIR / "opencv_face_detector.pbtxt"
 FACE_DETECTOR_MODEL = MODELS_DIR / "opencv_face_detector_uint8.pb"
 FAIRFACE_MODEL = MODELS_DIR / "fairface.onnx"
+WORLD_MODEL = MODELS_DIR / "yolov8s-worldv2.pt"  # open-vocabulary detector (earbuds, wallet, ...)
 FACE_LANDMARKER_MODEL = MODELS_DIR / "face_landmarker.task"
 
 MODEL_URLS = {
