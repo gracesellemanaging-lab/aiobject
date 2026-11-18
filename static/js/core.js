@@ -2,7 +2,7 @@
 
 const DEFAULT_SETTINGS = {
   confidence: Number(document.body.dataset.defaultConfidence) || 35,
-  interval: 800,
+  interval: 400,
   autoSave: true,
   mirror: true,
   boxes: true,
