@@ -20,7 +20,7 @@ from ai.registry import registry
 from ai.utils import make_detection, normalized_box
 from scanners.common import yolo_predict
 
-WORLD_FLOOR = 0.08
+WORLD_FLOOR = 0.04
 TILING = os.environ.get("FOCUS_TILING", "1") != "0"
 LIVE_WORLD = os.environ.get("FOCUS_LIVE_WORLD", "1") != "0"
 _EDGE_PX = 3
@@ -108,3 +108,13 @@ def focus_detections(
             details={"focus_key": item["key"], "sources": item["sources"]},
         ))
     return out
+
+
+def closest_guesses(world_raw: list[tuple[str, float, list[float]]], limit: int = 3) -> list[str]:
+    """Best open-vocabulary guesses, shown to the user when nothing passes the thresholds."""
+    best: dict[str, float] = {}
+    for prompt, conf, _box in world_raw:
+        if prompt:
+            best[prompt] = max(best.get(prompt, 0.0), conf)
+    top = sorted(best.items(), key=lambda item: item[1], reverse=True)[:limit]
+    return [f"{name} {round(score * 100)}%" for name, score in top if score >= 0.04]

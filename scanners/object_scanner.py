@@ -11,7 +11,7 @@ from ai.knowledge import lookup
 from ai.registry import registry
 from ai.utils import _iou, dedupe_detections, make_detection, normalized_box
 from scanners.common import attach_references, result_payload, yolo_predict
-from scanners.focus import focus_detections, run_world
+from scanners.focus import closest_guesses, focus_detections, run_world
 
 
 def _extra_objects(world_raw: list, image: np.ndarray, confidence: float) -> list[dict]:
@@ -94,8 +94,16 @@ class ObjectScanner:
                 "No object detected. People are excluded here: use Person Detection or Smart Scan. "
                 "Move closer and add light."
             )
-        if not live and registry.world_state != "ready":
-            notes.append("Extra objects (earphones, wallet...) are still loading or unavailable.")
+        if registry.world_state != "ready":
+            reason = registry.world_error or registry.world_state
+            notes.append(
+                "Pen / charger / connector detection (YOLO-World) is not ready: "
+                f"{str(reason)[:160]}. Mouse, remote and keyboard still work."
+            )
+        elif not detections:
+            guesses = closest_guesses(world_raw)
+            if guesses:
+                notes.append("Closest guesses (too weak to show): " + ", ".join(guesses) + ".")
 
         attach_references(detections)
         return result_payload("object", detections, notes, started, image, {

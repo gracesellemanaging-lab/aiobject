@@ -53,19 +53,19 @@ FOCUS_TARGETS: dict[str, FocusTarget] = {
             "ballpen", "Ballpen", "Stationery",
             "A ballpoint pen: a slim writing instrument with a retractable or capped ink tip.",
             ("ballpoint pen", "ballpen", "pen"),
-            coco=None, min_conf=0.15, min_area=0.0003, max_area=0.10,
+            coco=None, min_conf=0.10, min_area=0.0003, max_area=0.12,
         ),
         FocusTarget(
             "adapter", "Adapter Charger", "Electronics",
             "A power adapter / charger block that plugs into a wall outlet to charge a device.",
             ("phone charger adapter", "usb wall charger", "power adapter", "laptop charger"),
-            coco=None, min_conf=0.18, min_area=0.001, max_area=0.30,
+            coco=None, min_conf=0.12, min_area=0.001, max_area=0.30,
         ),
         FocusTarget(
             "connector", "Charging Connector", "Electronics",
             "The plug end of a charging or data cable (USB, Type-C, Lightning, barrel plug).",
             ("usb cable connector", "usb type-c plug", "charging cable plug"),
-            coco=None, min_conf=0.15, min_area=0.0002, max_area=0.08,
+            coco=None, min_conf=0.10, min_area=0.0002, max_area=0.08,
         ),
     )
 }
