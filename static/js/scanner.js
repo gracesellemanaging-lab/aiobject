@@ -239,7 +239,7 @@ function captureFrameBlob(options = {}) {
   }
 
   const canvas = document.createElement("canvas");
-  const longEdge = options.manual ? 1280 : 960;
+  const longEdge = options.manual ? 1280 : 640;
   const ratio = Math.min(1, longEdge / Math.max(width, height));
   canvas.width = Math.max(1, Math.round(width * ratio));
   canvas.height = Math.max(1, Math.round(height * ratio));
@@ -248,7 +248,7 @@ function captureFrameBlob(options = {}) {
   context.imageSmoothingQuality = "high";
   context.drawImage(els.camera, 0, 0, canvas.width, canvas.height);
   return new Promise((resolve) => {
-    canvas.toBlob((blob) => resolve(blob), "image/jpeg", options.manual ? 0.92 : 0.88);
+    canvas.toBlob((blob) => resolve(blob), "image/jpeg", options.manual ? 0.92 : 0.82);
   });
 }
 

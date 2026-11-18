@@ -71,20 +71,21 @@ class ObjectScanner:
                 details={"coco_class": raw["raw"], "class_id": raw["class_id"]},
             ))
 
-        for extra in _extra_objects(image, confidence, live):
-            # skip if a COCO detection already covers this spot
-            if any(_iou(extra["bbox"], d["bbox"]) > 0.6 for d in detections):
-                continue
-            detections.append(make_detection(
-                label=extra["label"],
-                category=extra["category"],
-                confidence=extra["confidence"],
-                bbox=extra["bbox"],
-                description=extra["description"],
-                reference_key=extra["label"].lower(),
-                source="YOLO-World · open vocabulary",
-                details={"prompt": extra["prompt"]},
-            ))
+        if not live:
+            for extra in _extra_objects(image, confidence, live):
+                # skip if a COCO detection already covers this spot
+                if any(_iou(extra["bbox"], d["bbox"]) > 0.6 for d in detections):
+                    continue
+                detections.append(make_detection(
+                    label=extra["label"],
+                    category=extra["category"],
+                    confidence=extra["confidence"],
+                    bbox=extra["bbox"],
+                    description=extra["description"],
+                    reference_key=extra["label"].lower(),
+                    source="YOLO-World · open vocabulary",
+                    details={"prompt": extra["prompt"]},
+                ))
 
         detections = dedupe_detections(detections)
         detections.sort(key=lambda item: item["confidence"], reverse=True)
@@ -96,7 +97,7 @@ class ObjectScanner:
                 "No object detected. People are excluded here: use Person Detection or Smart Scan. "
                 "Move closer and add light."
             )
-        if registry.world_state != "ready":
+        if not live and registry.world_state != "ready":
             notes.append("Extra objects (earphones, wallet, pen...) are still loading or unavailable.")
 
         attach_references(detections)
