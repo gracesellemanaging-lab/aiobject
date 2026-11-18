@@ -66,20 +66,23 @@ class GestureEngine:
         height, width = image.shape[:2]
         rgb = np.ascontiguousarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         pose, hands, _ = registry.mediapipe()
+        import mediapipe as mp
+
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
 
         pose_landmarks = None
         hand_landmarks = []
         hand_handedness = []
         with registry.mediapipe_lock:
             try:
-                pose_result = pose.process(rgb)
-                pose_landmarks = getattr(pose_result, "pose_landmarks", None)
+                pose_result = pose.detect(mp_image)
+                pose_landmarks = (pose_result.pose_landmarks or [None])[0]
             except Exception:
                 pose_landmarks = None
             try:
-                hand_result = hands.process(rgb)
-                hand_landmarks = list(hand_result.multi_hand_landmarks or [])
-                hand_handedness = list(hand_result.multi_handedness or [])
+                hand_result = hands.detect(mp_image)
+                hand_landmarks = list(hand_result.hand_landmarks or [])
+                hand_handedness = list(hand_result.handedness or [])
             except Exception:
                 hand_landmarks, hand_handedness = [], []
 
@@ -119,9 +122,13 @@ class GestureEngine:
         thumb_gestures: list[dict] = []
         for index, hand in enumerate(hand_landmarks[:2]):
             handedness = "Hand"
-            if index < len(hand_handedness) and hand_handedness[index].classification:
-                handedness = hand_handedness[index].classification[0].label
-            normalized = [(point.x, point.y) for point in hand.landmark]
+            if index < len(hand_handedness):
+                entry = hand_handedness[index]
+                category = entry[0] if isinstance(entry, (list, tuple)) and entry else entry
+                label = getattr(category, "category_name", None) or getattr(category, "label", None)
+                if label:
+                    handedness = label
+            normalized = [(point.x, point.y) for point in _hand_points(hand)]
             hand_info = _hand_geometry(normalized)
             hand_info["handedness"] = handedness
             hand_info["wrist"] = normalized[WRIST]
@@ -188,7 +195,7 @@ class GestureEngine:
                 features["ankle_separation"] = abs(ankles[0][0] - ankles[1][0])
                 features["ankle_vertical"] = abs(ankles[0][1] - ankles[1][1])
         if len(hand_landmarks) >= 2:
-            wrists = [hand.landmark[WRIST] for hand in hand_landmarks[:2]]
+            wrists = [_hand_points(hand)[WRIST] for hand in hand_landmarks[:2]]
             features["wrist_distance"] = math.dist((wrists[0].x, wrists[0].y), (wrists[1].x, wrists[1].y))
 
         if session_id:
@@ -246,11 +253,15 @@ class GestureEngine:
         }
 
 
+def _hand_points(hand) -> list:
+    return list(getattr(hand, "landmark", hand))
+
+
 def _pose_points(pose_landmarks) -> dict[int, tuple[float, float, float]]:
     if not pose_landmarks:
         return {}
     points = {}
-    for index, landmark in enumerate(pose_landmarks.landmark):
+    for index, landmark in enumerate(getattr(pose_landmarks, "landmark", pose_landmarks)):
         points[index] = (float(landmark.x), float(landmark.y), float(getattr(landmark, "visibility", 0.0)))
     return points
 

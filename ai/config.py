@@ -22,6 +22,8 @@ FACE_DETECTOR_MODEL = MODELS_DIR / "opencv_face_detector_uint8.pb"
 FAIRFACE_MODEL = MODELS_DIR / "fairface.onnx"
 WORLD_MODEL = MODELS_DIR / "yolov8s-worldv2.pt"  # open-vocabulary detector (earbuds, wallet, ...)
 FACE_LANDMARKER_MODEL = MODELS_DIR / "face_landmarker.task"
+POSE_LANDMARKER_MODEL = MODELS_DIR / "pose_landmarker_lite.task"
+HAND_LANDMARKER_MODEL = MODELS_DIR / "hand_landmarker.task"
 
 MODEL_URLS = {
     YOLO_MODEL.name: "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolov8n.pt",
@@ -29,6 +31,8 @@ MODEL_URLS = {
     FACE_DETECTOR_MODEL.name: "https://raw.githubusercontent.com/spmallick/learnopencv/master/AgeGender/opencv_face_detector_uint8.pb",
     FAIRFACE_MODEL.name: "https://github.com/yakhyo/fairface-onnx/releases/download/weights/fairface.onnx",
     FACE_LANDMARKER_MODEL.name: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+    POSE_LANDMARKER_MODEL.name: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",
+    HAND_LANDMARKER_MODEL.name: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
 }
 
 BROWSER_USER_AGENT = (

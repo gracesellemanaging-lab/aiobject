@@ -16,6 +16,8 @@ from .config import (
     FACE_DETECTOR_MODEL,
     FACE_DETECTOR_PROTO,
     FACE_LANDMARKER_MODEL,
+    HAND_LANDMARKER_MODEL,
+    POSE_LANDMARKER_MODEL,
     YOLO_MODEL,
     WORLD_MODEL,
 )
@@ -158,25 +160,32 @@ class ModelRegistry:
             return self._pose, self._hands, self._face_landmarker
         with self._init_lock:
             if self._pose is None:
-                import mediapipe as mp
+                import mediapipe as mp  # noqa: F401 - registers the tasks runtime
+                from mediapipe.tasks.python import BaseOptions, vision
 
                 logging.getLogger("absl").setLevel(logging.ERROR)
                 self._state["mediapipe"] = "loading"
-                self._pose = mp.solutions.pose.Pose(
-                    static_image_mode=True,
-                    model_complexity=1,
-                    smooth_landmarks=False,
-                    min_detection_confidence=0.35,
+                self._pose = vision.PoseLandmarker.create_from_options(
+                    vision.PoseLandmarkerOptions(
+                        base_options=BaseOptions(model_asset_buffer=POSE_LANDMARKER_MODEL.read_bytes()),
+                        running_mode=vision.RunningMode.IMAGE,
+                        num_poses=1,
+                        min_pose_detection_confidence=0.35,
+                        min_pose_presence_confidence=0.35,
+                    )
                 )
-                self._hands = mp.solutions.hands.Hands(
-                    static_image_mode=True,
-                    max_num_hands=2,
-                    min_detection_confidence=0.35,
-                    min_tracking_confidence=0.35,
+                self._hands = vision.HandLandmarker.create_from_options(
+                    vision.HandLandmarkerOptions(
+                        base_options=BaseOptions(model_asset_buffer=HAND_LANDMARKER_MODEL.read_bytes()),
+                        running_mode=vision.RunningMode.IMAGE,
+                        num_hands=2,
+                        min_hand_detection_confidence=0.35,
+                        min_hand_presence_confidence=0.35,
+                    )
                 )
             if self._face_landmarker is None:
                 try:
-                    import mediapipe as mp
+                    import mediapipe as mp  # noqa: F401
                     from mediapipe.tasks.python import BaseOptions, vision
 
                     self._face_landmarker = vision.FaceLandmarker.create_from_options(
