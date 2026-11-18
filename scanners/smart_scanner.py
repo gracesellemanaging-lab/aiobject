@@ -10,7 +10,9 @@ from ai.attributes import detect_faces
 from ai.expressions import analyze_expressions
 from ai.knowledge import GESTURE_INFO, lookup
 from ai.utils import dedupe_detections, make_detection
+from ai.focus_targets import COCO_TO_KEY
 from scanners.common import attach_references, result_payload, yolo_predict_with_people
+from scanners.focus import focus_detections
 from scanners.person_scanner import person_detection
 
 
@@ -34,7 +36,7 @@ class SmartScanner:
                 ))
                 continue
             info = lookup(raw["raw"])
-            if not info:
+            if not info or raw["raw"] in COCO_TO_KEY:  # focus classes come from the focus pipeline
                 continue
             detections.append(make_detection(
                 label=info["label"],
@@ -46,6 +48,8 @@ class SmartScanner:
                 source="YOLO11s · COCO 80",
                 details={"coco_class": raw["raw"]},
             ))
+
+        detections.extend(focus_detections(image, confidence, live))
 
         expression_faces = []
         if faces:
