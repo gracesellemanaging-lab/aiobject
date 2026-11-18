@@ -443,7 +443,7 @@ function loadReference(key, label) {
 
 function networkErrorText(error) {
   if (error && error.name === "AbortError") return "Request cancelled.";
-  if (error && error.name === "TypeError") return "Could not reach the local server. Make sure it is still running.";
+  if (error && error.name === "TypeError") return "Could not reach the AI server. Make sure the backend is running and the link is current.";
   return error && error.message ? error.message : "Something went wrong.";
 }
 
