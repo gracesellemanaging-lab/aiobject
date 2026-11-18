@@ -3,7 +3,7 @@
 //   https://your-name.github.io/aiobject/?api=https://your-backend.example.com
 // You can also hard-code it here: window.API_BASE = "https://your-name.hf.space";
 const apiFromQuery = new URLSearchParams(window.location.search).get("api");
-window.API_BASE = (apiFromQuery || "https://symmetrical-funicular-7v4xwqr7q4452rx7g.github.dev").trim().replace(/\/$/, "");
+window.API_BASE = (apiFromQuery || "https://symmetrical-funicular-7v4xwqr7q4452rx7g-5000.app.github.dev").trim().replace(/\/$/, "");
 
 // Friendly notice while the backend URL is not set (scanning needs the Python server).
 if (!window.API_BASE && /github\.io$/.test(location.hostname)) {
