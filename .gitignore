@@ -10,3 +10,4 @@ data/history.db
 data/references.json
 data/snapshots/
 *.pt
+static/refs/
