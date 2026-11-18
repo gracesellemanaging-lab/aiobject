@@ -16,8 +16,6 @@ EXTRA_OBJECTS: dict[str, tuple[str, str, str]] = {
     "pencil": ("Pencil", "Stationery", "A writing instrument with a graphite core."),
     "key": ("Key", "Accessories", "A metal key used to open a lock."),
     "power bank": ("Power Bank", "Electronics", "A portable battery for charging devices."),
-    "phone charger": ("Charger", "Electronics", "A power adapter or charging cable."),
-    "usb cable": ("Cable", "Electronics", "A cable for charging or transferring data."),
     "eyeglasses": ("Eyeglasses", "Accessories", "Glasses worn to correct vision."),
     "wrist watch": ("Wrist Watch", "Accessories", "A watch worn on the wrist."),
     "calculator": ("Calculator", "Electronics", "A handheld device for arithmetic."),
@@ -26,5 +24,8 @@ EXTRA_OBJECTS: dict[str, tuple[str, str, str]] = {
     "padlock": ("Padlock", "Objects", "A portable lock with a shackle."),
 }
 
-PROMPTS = list(EXTRA_OBJECTS)
+from .focus_targets import FOCUS_PROMPTS  # noqa: E402
+
+# Chargers and cables moved to focus_targets with better prompts and shape rules.
+PROMPTS = list(dict.fromkeys([*EXTRA_OBJECTS, *FOCUS_PROMPTS]))
 WORLD_CONFIDENCE_CAP = 0.30

@@ -17,15 +17,30 @@ from ai.utils import image_size, normalized_box
 PERSON_CONFIDENCE_CAP = 0.40
 
 
-def yolo_predict_with_people(image: np.ndarray, confidence: float, **kwargs: Any) -> list[dict[str, Any]]:
-    """Run YOLO at a lower floor for people, then apply the user's threshold to other objects.
+def yolo_predict_with_people(
+    image: np.ndarray,
+    confidence: float,
+    *,
+    object_floor: float | None = None,
+    keep_classes: set[str] | None = None,
+    **kwargs: Any,
+) -> list[dict[str, Any]]:
+    """Run YOLO at a lower floor for people and priority objects, then filter.
 
-    People are large, easy targets; a high slider value (e.g. 83%) otherwise hides them in
-    live camera frames.
+    Person detections use their own floor so a high confidence slider does not
+    hide people. ``keep_classes`` lets priority-object classes survive below the
+    user's slider; the focus pipeline applies their own thresholds afterwards.
     """
-    floor = min(confidence, PERSON_CONFIDENCE_CAP)
+    person_floor = min(confidence, PERSON_CONFIDENCE_CAP)
+    floor = min(person_floor, object_floor) if object_floor is not None else person_floor
+    keep = keep_classes or set()
     raw = yolo_predict(image, floor, **kwargs)
-    return [d for d in raw if d["raw"] == "person" or d["confidence"] >= confidence]
+    return [
+        detection for detection in raw
+        if (detection["raw"] == "person" and detection["confidence"] >= person_floor)
+        or detection["raw"] in keep
+        or (detection["raw"] != "person" and detection["confidence"] >= confidence)
+    ]
 
 
 def yolo_predict(

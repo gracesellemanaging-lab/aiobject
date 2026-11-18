@@ -2,8 +2,8 @@
 
 const overlayContext = els.overlay.getContext("2d");
 let lastLiveErrorAt = 0;
-// Remote backends are latency bound: start live frames small, climb only on fast links.
-let liveEdge = (window.API_BASE || "").trim() ? 512 : 640;
+// Keep live frames at 640 px: thin objects like charger cables need the detail.
+const LIVE_FRAME_EDGE = 640;
 
 function beginScan() {
   if (state.scanning) return null;
@@ -54,6 +54,47 @@ function abortScan() {
   if (!state.result) els.resultsStatus.textContent = "Waiting";
 }
 
+function cameraMirrorEnabled() {
+  return Boolean(settings.mirror) && state.cameraFacing === "user";
+}
+
+function updateMirror() {
+  els.stage.classList.toggle("mirror", cameraMirrorEnabled());
+  if (els.cameraFlip) {
+    els.cameraFlip.dataset.facing = state.cameraFacing;
+    els.cameraFlip.title = `Switch to ${state.cameraFacing === "user" ? "back" : "front"} camera`;
+  }
+  drawOverlay();
+}
+
+function cameraFacingLabel() {
+  return state.cameraFacing === "user" ? "front" : "back";
+}
+
+function cameraConstraints(facing, exact) {
+  return {
+    audio: false,
+    video: {
+      facingMode: exact ? { exact: facing } : { ideal: facing },
+      width: { ideal: 1920 },
+      height: { ideal: 1080 },
+      frameRate: { ideal: 30 },
+    },
+  };
+}
+
+async function requestCameraStream(facing) {
+  try {
+    return await navigator.mediaDevices.getUserMedia(cameraConstraints(facing, true));
+  } catch (error) {
+    // Some phones only report one facing mode, and many laptops ignore "exact".
+    if (error && (error.name === "OverconstrainedError" || error.name === "NotFoundError")) {
+      return navigator.mediaDevices.getUserMedia(cameraConstraints(facing, false));
+    }
+    throw error;
+  }
+}
+
 async function startCamera() {
   if (state.cameraOn) return;
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -63,18 +104,10 @@ async function startCamera() {
   clearTimeout(state.loopTimer);
   const epoch = ++state.epoch;
   els.cameraStart.disabled = true;
-  els.cameraState.innerHTML = '<span class="dot"></span>Requesting camera';
+  els.cameraState.innerHTML = `<span class="dot"></span>Requesting ${cameraFacingLabel()} camera`;
   els.cameraState.classList.remove("live");
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: {
-        facingMode: { ideal: "user" },
-        width: { ideal: 1920 },
-        height: { ideal: 1080 },
-        frameRate: { ideal: 30 },
-      },
-    });
+    const stream = await requestCameraStream(state.cameraFacing);
     await tuneCameraTrack(stream);
     if (epoch !== state.epoch) {
       stream.getTracks().forEach((track) => track.stop());
@@ -97,8 +130,9 @@ async function startCamera() {
     els.stageBadge.textContent = "LIVE";
     els.cameraStart.disabled = true;
     els.cameraStop.disabled = false;
-    els.cameraState.innerHTML = `<span class="dot"></span>Live scanning`;
+    els.cameraState.innerHTML = `<span class="dot"></span>Live · ${cameraFacingLabel()} camera`;
     els.cameraState.classList.add("live");
+    updateMirror();
     updateOverlaySize();
     startLiveLoop(120);
   } catch (error) {
@@ -116,6 +150,17 @@ async function startCamera() {
       els.stageBadge.textContent = "STANDBY";
     }
   }
+}
+
+async function flipCamera() {
+  state.cameraFacing = state.cameraFacing === "user" ? "environment" : "user";
+  updateMirror();
+  if (!state.cameraOn) {
+    toast(`Camera set to ${cameraFacingLabel()}. Start Camera to use it.`, "info", 2600);
+    return;
+  }
+  stopCamera({ keepFrame: false });
+  await startCamera();
 }
 
 function stopCamera(options = {}) {
@@ -246,7 +291,7 @@ function captureFrameBlob(options = {}) {
   }
 
   const canvas = document.createElement("canvas");
-  const longEdge = options.manual ? 1280 : liveEdge;
+  const longEdge = options.manual ? 1280 : LIVE_FRAME_EDGE;
   const ratio = Math.min(1, longEdge / Math.max(width, height));
   canvas.width = Math.max(1, Math.round(width * ratio));
   canvas.height = Math.max(1, Math.round(height * ratio));
@@ -255,11 +300,11 @@ function captureFrameBlob(options = {}) {
   context.imageSmoothingQuality = "high";
   context.drawImage(els.camera, 0, 0, canvas.width, canvas.height);
   return new Promise((resolve) => {
-    canvas.toBlob((blob) => resolve(blob), "image/jpeg", options.manual ? 0.92 : 0.65);
+    canvas.toBlob((blob) => resolve(blob), "image/jpeg", options.manual ? 0.92 : 0.75);
   });
 }
 
-async function sendScan(blob, source, save) {
+async function sendScan(blob, source, save, options = {}) {
   if (!blob) throw new Error("The frame could not be captured.");
   const controller = new AbortController();
   state.controller = controller;
@@ -270,6 +315,7 @@ async function sendScan(blob, source, save) {
   form.append("confidence", String(settings.confidence / 100));
   form.append("source", source);
   form.append("save", save ? "true" : "false");
+  if (options.still) form.append("still", "1");
   if (source === "camera" && state.sessionId) form.append("session_id", state.sessionId);
   try {
     const response = await fetch("/api/scan", {
@@ -299,12 +345,7 @@ async function runCameraScan(options = {}) {
     const blob = await captureFrameBlob({ manual: Boolean(options.manual) });
     if (!blob || epoch !== state.epoch) return null;
     const shouldSave = Boolean(options.manual) || (settings.autoSave && Date.now() - state.lastSaveAt > 30000);
-    const startedAt = performance.now();
-    const result = await sendScan(blob, "camera", shouldSave);
-    // Slow links (tunnel upload) drop to 512 px; fast ones climb back to 640.
-    const elapsed = performance.now() - startedAt;
-    if (elapsed > 1500 && liveEdge > 512) liveEdge = 512;
-    else if (elapsed < 700 && liveEdge < 640) liveEdge = 640;
+    const result = await sendScan(blob, "camera", shouldSave, { still: Boolean(options.manual) });
     if (epoch !== state.epoch || expectedMode !== state.mode) return null;
     applyScanResult(result);
     if (result.saved > 0) {
@@ -581,7 +622,7 @@ function geometryForStage() {
     naturalWidth = els.camera.videoWidth;
     naturalHeight = els.camera.videoHeight;
     fit = "cover";
-    mirror = settings.mirror;
+    mirror = cameraMirrorEnabled();
   } else if (kind === "image" && els.uploadImage.naturalWidth) {
     naturalWidth = els.uploadImage.naturalWidth;
     naturalHeight = els.uploadImage.naturalHeight;
@@ -724,7 +765,7 @@ function triggerUpload() {
 }
 
 function applySettings(updateDescriptions = false) {
-  els.stage.classList.toggle("mirror", settings.mirror);
+  updateMirror();
   els.scanConfidence.value = String(settings.confidence);
   els.scanConfidenceValue.textContent = `${settings.confidence}%`;
   if (state.cameraOn) {

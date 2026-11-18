@@ -110,7 +110,10 @@ def scan():
     confidence = max(0.15, min(0.9, confidence))
 
     source = (request.form.get("source") or "upload").lower().strip()
-    live = source == "camera"
+    still = (request.form.get("still") or "").lower() in {"1", "true", "yes", "on"}
+    # A manual "Scan Now" photo gets the full still-image pipeline (higher resolution,
+    # tiled YOLO-World), while the continuous camera loop stays on the fast path.
+    live = source == "camera" and not still
     save = (request.form.get("save") or "true").lower() not in {"0", "false", "no"}
     raw_session = request.form.get("session_id") or request.headers.get("X-Session-Id") or ""
     session_id = SESSION_PATTERN.sub("", raw_session)[:80] or None

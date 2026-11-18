@@ -238,16 +238,16 @@ GESTURE_INFO: dict[str, dict[str, Any]] = {
 # Values used to make the UI clearly communicate model limits.
 CAPABILITY_NOTES = {
     "person": "Man/woman and age ranges are uncertain AI estimates computed from visible facial features. They are not facts, exact ages or identity checks.",
-    "object": "Universal scanner uses YOLO11s trained on the 80 COCO object classes. Objects outside this vocabulary are not claimed as recognized.",
+    "object": "Universal scanner combines YOLO11s (80 COCO classes) with YOLO-World for priority everyday objects such as charger adapters, charger cables, USB connectors, mice, remotes and keyboards. Objects outside both vocabularies are not claimed as recognized.",
     "fruit": "Fruit scanner combines YOLO localization with an ImageNet food classifier. Fruits outside its vocabulary (for example mango, grapes, watermelon, papaya or dragon fruit) are marked as unsupported instead of guessed.",
     "gesture": "Gestures and expressions are estimated from body, hand and facial landmarks. Temporal gestures need several live frames. Expressions do not reveal true emotions or personality.",
-    "smart": "Smart Scan combines person, object, expression and age-range detection. Visual estimates are approximate and are labeled accordingly.",
+    "smart": "Smart Scan combines person, object, priority everyday-object (charger, cable, mouse, remote, keyboard) and expression detection. For small or thin items like charger cables, move closer and tap Scan Now. Visual estimates are approximate and are labeled accordingly.",
 }
 
 SCANNER_META = {
-    "smart": {"title": "Smart Scan", "engine": "YOLO11s + FairFace (age + gender) + MediaPipe Face", "note": CAPABILITY_NOTES["smart"]},
+    "smart": {"title": "Smart Scan", "engine": "YOLO11s + YOLO-World + FairFace (age + gender) + MediaPipe Face", "note": CAPABILITY_NOTES["smart"]},
     "person": {"title": "Person Detection", "engine": "YOLO11s + FairFace (age + gender)", "note": CAPABILITY_NOTES["person"]},
-    "object": {"title": "Object Detection", "engine": "YOLO11s (COCO) + YOLO-World (extra objects)", "note": CAPABILITY_NOTES["object"]},
+    "object": {"title": "Object Detection", "engine": "YOLO11s (COCO) + YOLO-World (charger, cable, extra objects)", "note": CAPABILITY_NOTES["object"]},
     "fruit": {"title": "Fruit Recognition", "engine": "YOLO11s + MobileNetV3", "note": CAPABILITY_NOTES["fruit"]},
     "gesture": {"title": "Gesture Scanner", "engine": "MediaPipe Pose · Hands · Face", "note": CAPABILITY_NOTES["gesture"]},
 }
@@ -269,6 +269,9 @@ REFERENCE_INFO: dict[str, dict[str, str]] = {
     "standing": {"title": "Standing", "query": "person standing"},
     "sitting": {"title": "Sitting", "query": "person sitting"},
     "walking": {"title": "Walking", "query": "person walking"},
+    "charger-adapter": {"title": "AC adapter", "query": "AC adapter power supply charger"},
+    "charger-cable": {"title": "USB cable", "query": "USB charging cable"},
+    "charging-connector": {"title": "USB-C", "query": "USB-C connector plug"},
 }
 
 

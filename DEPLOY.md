@@ -21,7 +21,14 @@ The app has two parts:
 
 ## Connect the front-end
 
-Edit `docs/config.js`:
+Quick test without editing or redeploying: open the Pages site with the backend URL
+in the query string, for example
+
+```
+https://gracesellemanaging-lab.github.io/aiobject/?api=https://<user>-<space>.hf.space
+```
+
+For a permanent connection, edit `docs/config.js`:
 
 ```js
 window.API_BASE = "https://<user>-<space>.hf.space";
@@ -30,6 +37,18 @@ window.API_BASE = "https://<user>-<space>.hf.space";
 Commit and push. Pages updates in about a minute. The backend only accepts requests from
 `https://gracesellemanaging-lab.github.io` by default; set the `ALLOWED_ORIGINS` env var
 (comma-separated) to allow others.
+
+## Temporary HTTPS tunnel (fastest phone test)
+
+Mobile browsers only allow the camera on HTTPS pages, so a plain `http://192.168.x.x:5000`
+link will not work. Run the backend on a computer, then expose it with Cloudflare Tunnel:
+
+```
+cloudflared tunnel --url http://localhost:5000
+```
+
+Copy the printed `https://....trycloudflare.com` address and use it as the `?api=` value
+above. The address changes every time the tunnel restarts.
 
 ## Backend on GitHub Codespaces (no other account needed)
 

@@ -1,47 +1,21 @@
-"""Object scanner: everyday objects only (no people). COCO 80 minus person + extra open-vocabulary objects."""
+"""Object scanner: everyday objects only (no people). COCO 80 + priority objects."""
 from __future__ import annotations
 
 import time
 
 import numpy as np
 
-from ai.extra_objects import EXTRA_OBJECTS, WORLD_CONFIDENCE_CAP
+from ai.focus_targets import COCO_TO_KEY, FOCUS_COCO_FLOOR
 from ai.knowledge import lookup
 from ai.registry import registry
-from ai.utils import _iou, dedupe_detections, make_detection, normalized_box
+from ai.utils import _iou, dedupe_detections, make_detection
 from scanners.common import attach_references, result_payload, yolo_predict
-
-
-def _extra_objects(image: np.ndarray, confidence: float, live: bool) -> list[dict]:
-    """Detect objects that are not in COCO (earphones, wallet, pen...). Empty if unavailable."""
-    model = registry.world()
-    if model is None:
-        return []
-    height, width = image.shape[:2]
-    conf = max(0.12, min(confidence, WORLD_CONFIDENCE_CAP))
-    try:
-        with registry.world_lock:
-            result = model.predict(image, imgsz=640 if not live else 512, conf=conf,
-                                   iou=0.5, verbose=False, device="cpu")[0]
-    except Exception:  # noqa: BLE001 - extras must never break a scan
-        return []
-    found = []
-    names = result.names
-    for box in getattr(result, "boxes", None) or []:
-        prompt = names.get(int(box.cls[0].item()), "")
-        entry = EXTRA_OBJECTS.get(prompt)
-        if not entry:
-            continue
-        x1, y1, x2, y2 = box.xyxy[0].detach().cpu().numpy().tolist()
-        # Tiny specks are the open-vocabulary model's main false positive.
-        if (x2 - x1) * (y2 - y1) < 0.003 * width * height:
-            continue
-        found.append({
-            "label": entry[0], "category": entry[1], "description": entry[2], "prompt": prompt,
-            "confidence": float(box.conf[0].item()),
-            "bbox": normalized_box(x1, y1, x2, y2, width, height),
-        })
-    return found
+from scanners.focus import (
+    closest_guesses,
+    extra_object_detections,
+    focus_detections,
+    run_world,
+)
 
 
 class ObjectScanner:
@@ -51,11 +25,26 @@ class ObjectScanner:
              max_detections: int = 25) -> dict:
         started = time.perf_counter()
         coco_names = {name for name in registry.yolo_names.values() if name != "person"}
-        raw_detections = yolo_predict(image, confidence, live=live, class_names=coco_names,
-                                      max_detections=max(6, max_detections * 2))
+        raw_detections = yolo_predict(
+            image,
+            min(confidence, FOCUS_COCO_FLOOR),
+            live=live,
+            class_names=coco_names,
+            max_detections=max(12, max_detections * 3),
+        )
+
+        world_started = time.perf_counter()
+        world_raw = run_world(image, live=live)
+        world_ms = round((time.perf_counter() - world_started) * 1000, 1)
 
         detections = []
+        focus_raw = []
         for raw in raw_detections:
+            if raw["raw"] in COCO_TO_KEY:
+                focus_raw.append(raw)  # handled by the focus pipeline
+                continue
+            if raw["confidence"] < confidence:
+                continue
             info = lookup(raw["raw"])
             if info:
                 label, category, description = info["label"], info["category"], info["description"]
@@ -74,21 +63,21 @@ class ObjectScanner:
                 details={"coco_class": raw["raw"], "class_id": raw["class_id"]},
             ))
 
+        detections.extend(focus_detections(
+            image,
+            confidence,
+            live,
+            coco_raw=focus_raw,
+            world_raw=world_raw,
+            coco_all=raw_detections,
+        ))
+
         if not live:
-            for extra in _extra_objects(image, confidence, live):
+            for extra in extra_object_detections(image, confidence, world_raw):
                 # skip if a COCO detection already covers this spot
-                if any(_iou(extra["bbox"], d["bbox"]) > 0.6 for d in detections):
+                if any(_iou(extra["bbox"], detection["bbox"]) > 0.6 for detection in detections):
                     continue
-                detections.append(make_detection(
-                    label=extra["label"],
-                    category=extra["category"],
-                    confidence=extra["confidence"],
-                    bbox=extra["bbox"],
-                    description=extra["description"],
-                    reference_key=extra["label"].lower(),
-                    source="YOLO-World · open vocabulary",
-                    details={"prompt": extra["prompt"]},
-                ))
+                detections.append(extra)
 
         detections = dedupe_detections(detections)
         detections.sort(key=lambda item: item["confidence"], reverse=True)
@@ -98,15 +87,29 @@ class ObjectScanner:
         if not detections:
             notes.append(
                 "No object detected. People are excluded here: use Person Detection or Smart Scan. "
-                "Move closer and add light."
+                "Move closer, add light, or tap Scan Now for a full-resolution scan."
             )
-        if not live and registry.world_state != "ready":
-            notes.append("Extra objects (earphones, wallet, pen...) are still loading or unavailable.")
+        if registry.world_state in {"idle", "loading"}:
+            notes.append(
+                "Charger, cable and adapter detection is still loading. "
+                "Mouse, remote and keyboard detection already works."
+            )
+        elif registry.world_state == "error":
+            reason = str(registry.world_error or "YOLO-World unavailable")[:160]
+            notes.append(
+                "Charger, cable and adapter detection is unavailable: "
+                f"{reason}. Mouse, remote and keyboard detection still works."
+            )
+        elif not live and not detections:
+            guesses = closest_guesses(world_raw)
+            if guesses:
+                notes.append("Closest open-vocabulary guesses (too weak to show): " + ", ".join(guesses) + ".")
 
         attach_references(detections)
         return result_payload("object", detections, notes, started, image, {
-            "supported_vocabulary": "COCO 80 (no person) + extra objects",
+            "supported_vocabulary": "COCO 80 (no person) + priority objects (mouse, remote, keyboard, charger, cable)",
             "count": len(detections),
+            "world_ms": world_ms,
         })
 
 

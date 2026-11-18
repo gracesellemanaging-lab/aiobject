@@ -246,7 +246,7 @@ function openReferenceModal(reference, label) {
   els.modalConfidence.hidden = true;
   els.modalMeta.innerHTML = [
     `<span>${esc(reference.source || "Wikimedia")}</span>`,
-    `<span>Cached on this computer</span>`,
+    `<span>Cached by the server</span>`,
     `<span>Public educational image</span>`,
   ].join("");
   els.modalDesc.textContent = "This public reference image is shown to help you visually compare the detected item. It is not part of the detection result.";
@@ -364,6 +364,7 @@ function bindEvents() {
   });
   els.cameraStart.addEventListener("click", startCamera);
   els.cameraStop.addEventListener("click", () => stopCamera({ keepFrame: true }));
+  if (els.cameraFlip) els.cameraFlip.addEventListener("click", flipCamera);
   els.uploadTrigger.addEventListener("click", () => {
     state.pendingUploadMode = null;
     triggerUpload();

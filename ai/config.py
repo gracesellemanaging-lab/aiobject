@@ -20,13 +20,14 @@ YOLO_MODEL = MODELS_DIR / "yolo11s.pt"
 FACE_DETECTOR_PROTO = MODELS_DIR / "opencv_face_detector.pbtxt"
 FACE_DETECTOR_MODEL = MODELS_DIR / "opencv_face_detector_uint8.pb"
 FAIRFACE_MODEL = MODELS_DIR / "fairface.onnx"
-WORLD_MODEL = MODELS_DIR / "yolov8s-worldv2.pt"  # open-vocabulary detector (earbuds, wallet, ...)
+WORLD_MODEL = MODELS_DIR / os.environ.get("WORLD_MODEL_FILE", "yolov8m-worldv2.pt")  # open-vocabulary detector
 FACE_LANDMARKER_MODEL = MODELS_DIR / "face_landmarker.task"
 POSE_LANDMARKER_MODEL = MODELS_DIR / "pose_landmarker_lite.task"
 HAND_LANDMARKER_MODEL = MODELS_DIR / "hand_landmarker.task"
 
 MODEL_URLS = {
     YOLO_MODEL.name: "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo11s.pt",
+    WORLD_MODEL.name: f"https://github.com/ultralytics/assets/releases/download/v8.4.0/{WORLD_MODEL.name}",
     FACE_DETECTOR_PROTO.name: "https://raw.githubusercontent.com/spmallick/learnopencv/master/AgeGender/opencv_face_detector.pbtxt",
     FACE_DETECTOR_MODEL.name: "https://raw.githubusercontent.com/spmallick/learnopencv/master/AgeGender/opencv_face_detector_uint8.pb",
     FAIRFACE_MODEL.name: "https://github.com/yakhyo/fairface-onnx/releases/download/weights/fairface.onnx",

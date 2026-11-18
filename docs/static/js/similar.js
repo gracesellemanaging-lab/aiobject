@@ -258,7 +258,7 @@ function renderSimilarAnalysis(data) {
     meta.fruits ? `${meta.fruits} fruit` : "",
     meta.expressions ? `${meta.expressions} expressions` : "",
   ].filter(Boolean);
-  similarEls.analysisBadge.textContent = counts.length ? counts.join(" · ") : (meta.engine || "Local AI");
+  similarEls.analysisBadge.textContent = counts.length ? counts.join(" · ") : (meta.engine || "Self-hosted AI");
 
   const queries = Array.isArray(data.queries) ? data.queries : [];
   similarEls.queries.textContent = queries.length

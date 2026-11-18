@@ -25,9 +25,10 @@ from .downloads import ensure_models
 
 logger = logging.getLogger(__name__)
 
-_MODEL_KEYS = ("yolo", "faces", "fairface", "mediapipe", "classifier")
+_MODEL_KEYS = ("yolo", "world", "faces", "fairface", "mediapipe", "classifier")
 _MODEL_LABELS = {
     "yolo": "YOLO11s object detector",
+    "world": "YOLO-World charger / cable detector",
     "faces": "OpenCV face detector",
     "fairface": "FairFace age estimator",
     "mediapipe": "MediaPipe pose / hands / face",
@@ -75,6 +76,7 @@ class ModelRegistry:
         for key, loader in (
             ("faces", self.faces),
             ("yolo", self.yolo),
+            ("world", self.world),  # priority objects come online before the slower face models
             ("fairface", self.fairface),
             ("mediapipe", self.mediapipe),
             ("classifier", self.classifier),
@@ -85,7 +87,6 @@ class ModelRegistry:
                 logger.exception("Failed to initialize %s", key)
                 self._state[key] = "error"
                 self._errors[key] = str(exc)
-        self.world()  # optional extra-object detector; never blocks the core models
 
     def _ready(self, key: str) -> None:
         self._state[key] = "ready"
@@ -248,13 +249,17 @@ class ModelRegistry:
                     from .extra_objects import PROMPTS
 
                     self.world_state = "loading"
+                    self._state["world"] = "loading"
                     model = YOLOWorld(str(WORLD_MODEL))
                     model.set_classes(PROMPTS)
                     self._world = model
                     self.world_state = "ready"
+                    self._ready("world")
                 except Exception as exc:  # noqa: BLE001 - extras are optional
                     self.world_state = "error"
                     self.world_error = str(exc)
+                    self._state["world"] = "error"
+                    self._errors["world"] = str(exc)
                     logger.exception("YOLO-World unavailable")
         return self._world
 
@@ -269,7 +274,9 @@ class ModelRegistry:
                 "state": state,
                 "error": self._errors.get(key),
             })
-        ready = all(model["state"] == "ready" for model in models)
+        ready = all(
+            model["state"] == "ready" for model in models if model["key"] != "world"
+        )
         return {
             "ready": ready,
             "models": models,
