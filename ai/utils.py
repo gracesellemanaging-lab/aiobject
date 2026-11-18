@@ -4,7 +4,6 @@ from __future__ import annotations
 import io
 import time
 import uuid
-from pathlib import Path
 from typing import Any, Iterable
 
 import cv2
@@ -12,6 +11,8 @@ import numpy as np
 from PIL import Image, ImageOps
 
 from .config import SNAPSHOT_DIR
+
+MAX_IMAGE_PIXELS = 60_000_000  # reject oversized decodes before they allocate gigabytes
 
 CATEGORY_COLORS = {
     "People": "#3ee9ff",
@@ -50,7 +51,11 @@ def decode_image(data: bytes, max_side: int = 1600) -> np.ndarray:
         raise ValueError("Empty image data")
     try:
         pil = Image.open(io.BytesIO(data))
+        if pil.width * pil.height > MAX_IMAGE_PIXELS:
+            raise ValueError("Image dimensions are too large")
         pil = ImageOps.exif_transpose(pil).convert("RGB")
+    except ValueError:
+        raise
     except Exception as exc:  # noqa: BLE001
         raise ValueError("The image could not be decoded") from exc
 

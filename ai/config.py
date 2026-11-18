@@ -36,8 +36,8 @@ MODEL_URLS = {
 }
 
 BROWSER_USER_AGENT = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+    "AIObjectVisualizer/1.0 "
+    "(https://github.com/gracesellemanaging-lab/aiobject; gracesellemanaging-lab@users.noreply.github.com)"
 )
 WIKI_API = "https://en.wikipedia.org/w/api.php"
 COMMONS_API = "https://commons.wikimedia.org/w/api.php"

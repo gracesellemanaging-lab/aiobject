@@ -500,7 +500,7 @@ async function refreshHealth() {
       els.settingsUnsupported.textContent = `${health.unsupported_fruits.join(", ")} are not in the supported fruit vocabulary and will not be guessed. Objects outside the COCO training set are also not claimed as recognised.`;
     }
   } catch {
-    setStatusState("bad", "Server offline");
+    setStatusState("warn", "Reconnecting…");
     els.systemUptime.textContent = "—";
   } finally {
     state.healthTimer = window.setTimeout(refreshHealth, delay);

@@ -26,6 +26,8 @@ from .config import (
     WIKI_API,
 )
 from .knowledge import reference_info
+from .net import request
+from .utils import MAX_IMAGE_PIXELS
 
 logger = logging.getLogger(__name__)
 
@@ -199,7 +201,7 @@ class ReferenceService:
     def _get_json(self, api: str, params: dict) -> dict | None:
         self._throttle()
         try:
-            response = self._session.get(api, params=params, timeout=REFERENCE_TIMEOUT)
+            response = request(self._session, "GET", api, params=params, timeout=REFERENCE_TIMEOUT)
             response.raise_for_status()
             return response.json()
         except Exception as exc:  # noqa: BLE001
@@ -293,7 +295,9 @@ class ReferenceService:
 
     def _download_image(self, key: str, url: str) -> str:
         self._throttle()
-        response = self._session.get(
+        response = request(
+            self._session,
+            "GET",
             url,
             timeout=(6, 25),
             headers={"Referer": "https://en.wikipedia.org/", "Accept": "image/avif,image/webp,image/*,*/*;q=0.8"},
@@ -305,6 +309,8 @@ class ReferenceService:
         if len(response.content) > 12 * 1024 * 1024:
             raise ValueError("reference image is too large")
         image = Image.open(io.BytesIO(response.content))
+        if image.width * image.height > MAX_IMAGE_PIXELS:
+            raise ValueError("reference image has too many pixels")
         image = ImageOps.exif_transpose(image)
         if getattr(image, "is_animated", False):
             image.seek(0)

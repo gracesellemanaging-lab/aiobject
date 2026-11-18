@@ -11,3 +11,4 @@ data/references.json
 data/snapshots/
 *.pt
 static/refs/
+static/similar/

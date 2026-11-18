@@ -129,7 +129,10 @@ async function loadHistory(reset = true) {
     els.historyLoadMore.hidden = state.historyOffset >= Number(data.total);
     els.historyLoadMore.disabled = false;
   } catch {
-    if (token === historyRequestToken) toast("Scan history could not be loaded.", "error");
+    if (token === historyRequestToken) {
+      els.historyLoadMore.disabled = false;
+      toast("Scan history could not be loaded.", "error");
+    }
   }
 }
 
@@ -174,7 +177,7 @@ function setModalImage(source) {
     els.modalImage.onerror = null;
     els.modalImage.src = PLACEHOLDER_IMAGE;
   };
-  els.modalImage.src = source || PLACEHOLDER_IMAGE;
+  els.modalImage.src = source ? assetUrl(source) : PLACEHOLDER_IMAGE;
 }
 
 function openDetail(item) {
@@ -219,13 +222,13 @@ function openDetail(item) {
       state.refs.set(item.reference_key, reference);
       els.modalReference.hidden = false;
       els.modalReferenceTitle.textContent = reference.title || "Visual reference";
-      els.modalReferenceImage.src = reference.image;
+      els.modalReferenceImage.src = assetUrl(reference.image);
       els.modalReferenceImage.alt = reference.title || "Visual reference";
       els.modalReferenceImage.onerror = () => {
         els.modalReferenceImage.onerror = null;
         els.modalReferenceImage.src = PLACEHOLDER_IMAGE;
       };
-      els.modalReferenceLink.href = reference.page_url || reference.image;
+      els.modalReferenceLink.href = reference.page_url || assetUrl(reference.image);
     });
   }
   openModal();
@@ -251,13 +254,13 @@ function openReferenceModal(reference, label) {
   els.modalNote.hidden = true;
   els.modalReference.hidden = false;
   els.modalReferenceTitle.textContent = reference.title || "Open source";
-  els.modalReferenceImage.src = reference.image;
+  els.modalReferenceImage.src = assetUrl(reference.image);
   els.modalReferenceImage.alt = reference.title || "Visual reference";
   els.modalReferenceImage.onerror = () => {
     els.modalReferenceImage.onerror = null;
     els.modalReferenceImage.src = PLACEHOLDER_IMAGE;
   };
-  els.modalReferenceLink.href = reference.page_url || reference.image;
+  els.modalReferenceLink.href = reference.page_url || assetUrl(reference.image);
   openModal();
 }
 

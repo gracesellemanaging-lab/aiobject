@@ -159,10 +159,9 @@ class ModelRegistry:
         if self._pose is not None and self._hands is not None and self._face_landmarker is not None:
             return self._pose, self._hands, self._face_landmarker
         with self._init_lock:
-            if self._pose is None:
-                import mediapipe as mp  # noqa: F401 - registers the tasks runtime
-                from mediapipe.tasks.python import BaseOptions, vision
+            from mediapipe.tasks.python import BaseOptions, vision
 
+            if self._pose is None:
                 logging.getLogger("absl").setLevel(logging.ERROR)
                 self._state["mediapipe"] = "loading"
                 self._pose = vision.PoseLandmarker.create_from_options(
@@ -185,9 +184,6 @@ class ModelRegistry:
                 )
             if self._face_landmarker is None:
                 try:
-                    import mediapipe as mp  # noqa: F401
-                    from mediapipe.tasks.python import BaseOptions, vision
-
                     self._face_landmarker = vision.FaceLandmarker.create_from_options(
                         vision.FaceLandmarkerOptions(
                             base_options=BaseOptions(model_asset_buffer=FACE_LANDMARKER_MODEL.read_bytes()),

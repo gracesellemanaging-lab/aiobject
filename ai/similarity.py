@@ -24,7 +24,9 @@ import requests
 from PIL import Image, ImageOps
 
 from .config import BROWSER_USER_AGENT, COMMONS_API, SIMILAR_DIR
+from .net import request
 from .registry import registry
+from .utils import MAX_IMAGE_PIXELS
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +35,6 @@ RESULTS_PER_QUERY = 6
 MAX_CANDIDATES = 20
 MAX_DOWNLOADS = 16
 SEARCH_TIMEOUT = 18.0
-MAX_SEARCH_SECONDS = 100.0
 
 _HTML_TAG = re.compile(r"<[^>]+>")
 _SPACES = re.compile(r"\s+")
@@ -122,6 +123,7 @@ class VisualSimilarityService:
 
     # ----------------------------------------------------------------- search
     def search(self, image: np.ndarray, queries: Iterable[str], limit: int = 8) -> dict[str, Any]:
+        self._prune_cache()
         started = time.perf_counter()
         query_list = self._normalise_queries(queries)
         if not query_list:
@@ -141,9 +143,10 @@ class VisualSimilarityService:
 
         matches: list[dict[str, Any]] = []
         failures = 0
-        with ThreadPoolExecutor(max_workers=6, thread_name_prefix="similar") as pool:
+        pool = ThreadPoolExecutor(max_workers=6, thread_name_prefix="similar")
+        try:
             futures = {pool.submit(self._prepare_candidate, candidate): candidate for candidate in candidates}
-            done, pending = wait(futures, timeout=MAX_SEARCH_SECONDS)
+            done, pending = wait(futures, timeout=SEARCH_TIMEOUT)
             failures += len(pending)
             for future in pending:
                 future.cancel()
@@ -162,6 +165,9 @@ class VisualSimilarityService:
                 prepared.pop("embedding", None)
                 prepared.pop("colour", None)
                 matches.append(prepared)
+        finally:
+            # Never hold the response open for slow downloads that missed the deadline.
+            pool.shutdown(wait=False, cancel_futures=True)
 
         matches.sort(key=lambda item: item["similarity"], reverse=True)
         elapsed = round((time.perf_counter() - started) * 1000, 1)
@@ -246,7 +252,7 @@ class VisualSimilarityService:
             "iiurlwidth": "720",
         }
         try:
-            response = self._session.get(COMMONS_API, params=params, timeout=10)
+            response = request(self._session, "GET", COMMONS_API, params=params, timeout=10)
             response.raise_for_status()
             payload = response.json()
         except Exception as exc:  # noqa: BLE001
@@ -343,31 +349,38 @@ class VisualSimilarityService:
             "colour": colour,
         }
 
-    def _download(self, url: str, target) -> None:
-        last_error: Exception | None = None
-        content = b""
-        for attempt in range(2):
+    def _prune_cache(self, keep: int = 300) -> None:
+        files = []
+        for path in SIMILAR_DIR.glob("*.jpg"):
+            if path.name.endswith(".part.jpg"):
+                continue
             try:
-                response = self._session.get(
-                    url,
-                    timeout=(5, 20),
-                    headers={"Referer": "https://commons.wikimedia.org/"},
-                )
-                response.raise_for_status()
-                content_type = response.headers.get("Content-Type", "").lower()
-                if content_type and not content_type.startswith("image/"):
-                    raise ValueError(f"unexpected content type: {content_type}")
-                content = response.content
-                break
-            except Exception as exc:  # noqa: BLE001 - retry once before giving up
-                last_error = exc
-                if attempt == 0:
-                    time.sleep(0.6)
+                files.append((path.stat().st_mtime, path))
+            except OSError:
+                continue
+        for _, path in sorted(files)[:-keep]:
+            path.unlink(missing_ok=True)
+
+    def _download(self, url: str, target) -> None:
+        response = request(
+            self._session,
+            "GET",
+            url,
+            timeout=(5, 20),
+            headers={"Referer": "https://commons.wikimedia.org/"},
+        )
+        response.raise_for_status()
+        content_type = response.headers.get("Content-Type", "").lower()
+        if content_type and not content_type.startswith("image/"):
+            raise ValueError(f"unexpected content type: {content_type}")
+        content = response.content
         if not content:
-            raise last_error or ValueError("empty candidate download")
+            raise ValueError("empty candidate download")
         if len(content) > 8 * 1024 * 1024:
             raise ValueError("candidate image is too large")
         image = Image.open(io.BytesIO(content))
+        if image.width * image.height > MAX_IMAGE_PIXELS:
+            raise ValueError("candidate image has too many pixels")
         image = ImageOps.exif_transpose(image)
         if getattr(image, "is_animated", False):
             image.seek(0)
@@ -375,9 +388,12 @@ class VisualSimilarityService:
         if min(image.size) < 120:
             raise ValueError("candidate image is too small")
         image.thumbnail((720, 720), Image.Resampling.LANCZOS)
-        temp = target.with_suffix(".part.jpg")
-        image.save(temp, format="JPEG", quality=82, optimize=True)
-        temp.replace(target)
+        temp = target.with_name(target.stem + ".part")
+        try:
+            image.save(temp, format="JPEG", quality=82, optimize=True)
+            temp.replace(target)
+        finally:
+            temp.unlink(missing_ok=True)
 
     @staticmethod
     def _load_local(path) -> np.ndarray:

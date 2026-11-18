@@ -25,7 +25,12 @@ function endScan(token) {
   els.resultsStatus.classList.remove("active");
   els.scanNow.disabled = false;
   els.uploadTrigger.disabled = false;
-  if (!state.result) els.resultsStatus.textContent = "Waiting";
+  if (state.cameraOn) {
+    els.resultsStatus.textContent = "Live";
+    els.resultsStatus.classList.add("active");
+  } else if (!state.result) {
+    els.resultsStatus.textContent = "Waiting";
+  }
 }
 
 function abortScan() {
