@@ -1,6 +1,6 @@
 // URL of the hosted Python backend (Hugging Face Space, Render, etc.).
-// Example: window.API_BASE = "https://your-name-aiobject.hf.space";
-window.API_BASE = "https://aiobject-api-4j9r64gq45j9h449-5000.app.github.dev";
+// Example: window.API_BASE = "https://submitted-signals-occurring-inflation.trycloudflare.com";
+window.API_BASE = "https://submitted-signals-occurring-inflation.trycloudflare.com";
 
 // Friendly notice while the backend URL is not set (scanning needs the Python server).
 if (!window.API_BASE && /github\.io$/.test(location.hostname)) {
