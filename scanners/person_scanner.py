@@ -13,7 +13,7 @@ from scanners.common import attach_references, result_payload, yolo_predict, PER
 
 
 def person_detection(image: np.ndarray, raw: dict, faces: list[dict], used_faces: set[int],
-                     source: str = "YOLOv8s · COCO person") -> dict[str, Any]:
+                     source: str = "YOLO11s · COCO person") -> dict[str, Any]:
     box = raw["bbox"]
     candidate = None
     for face in faces:
@@ -29,7 +29,7 @@ def person_detection(image: np.ndarray, raw: dict, faces: list[dict], used_faces
         "age_is_estimate": True,
         "disclaimer": ATTRIBUTE_DISCLAIMER,
     }
-    details: dict[str, Any] = {"detector": "YOLOv8s", "coco_class": "person"}
+    details: dict[str, Any] = {"detector": "YOLO11s", "coco_class": "person"}
     if candidate is not None:
         used_faces.add(id(candidate))
         estimate = estimate_attributes(image, candidate)

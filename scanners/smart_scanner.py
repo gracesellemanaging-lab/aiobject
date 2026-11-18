@@ -30,7 +30,7 @@ class SmartScanner:
         for raw in raw_detections:
             if raw["raw"] == "person":
                 detections.append(person_detection(
-                    image, raw, faces, used_faces, source="YOLOv8s · Smart Scan person"
+                    image, raw, faces, used_faces, source="YOLO11s · Smart Scan person"
                 ))
                 continue
             info = lookup(raw["raw"])
@@ -43,7 +43,7 @@ class SmartScanner:
                 bbox=raw["bbox"],
                 description=info["description"],
                 reference_key=raw["raw"],
-                source="YOLOv8s · COCO 80",
+                source="YOLO11s · COCO 80",
                 details={"coco_class": raw["raw"]},
             ))
 

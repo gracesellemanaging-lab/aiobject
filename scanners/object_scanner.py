@@ -62,7 +62,7 @@ class ObjectScanner:
             else:
                 label = raw["raw"].replace("_", " ").title()
                 category = "Object"
-                description = "An object detected by the YOLOv8s model."
+                description = "An object detected by the YOLO11s model."
             detections.append(make_detection(
                 label=label,
                 category=category,
@@ -70,7 +70,7 @@ class ObjectScanner:
                 bbox=raw["bbox"],
                 description=description,
                 reference_key=raw["raw"],
-                source="YOLOv8s · COCO 80",
+                source="YOLO11s · COCO 80",
                 details={"coco_class": raw["raw"], "class_id": raw["class_id"]},
             ))
 

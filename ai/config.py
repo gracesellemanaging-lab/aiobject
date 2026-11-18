@@ -16,7 +16,7 @@ SIMILAR_DIR = STATIC_DIR / "similar"
 for _directory in (MODELS_DIR, DATA_DIR, SNAPSHOT_DIR, REFERENCE_DIR, SIMILAR_DIR):
     _directory.mkdir(parents=True, exist_ok=True)
 
-YOLO_MODEL = MODELS_DIR / "yolov8s.pt"
+YOLO_MODEL = MODELS_DIR / "yolo11s.pt"
 FACE_DETECTOR_PROTO = MODELS_DIR / "opencv_face_detector.pbtxt"
 FACE_DETECTOR_MODEL = MODELS_DIR / "opencv_face_detector_uint8.pb"
 FAIRFACE_MODEL = MODELS_DIR / "fairface.onnx"
@@ -26,7 +26,7 @@ POSE_LANDMARKER_MODEL = MODELS_DIR / "pose_landmarker_lite.task"
 HAND_LANDMARKER_MODEL = MODELS_DIR / "hand_landmarker.task"
 
 MODEL_URLS = {
-    YOLO_MODEL.name: "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolov8s.pt",
+    YOLO_MODEL.name: "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo11s.pt",
     FACE_DETECTOR_PROTO.name: "https://raw.githubusercontent.com/spmallick/learnopencv/master/AgeGender/opencv_face_detector.pbtxt",
     FACE_DETECTOR_MODEL.name: "https://raw.githubusercontent.com/spmallick/learnopencv/master/AgeGender/opencv_face_detector_uint8.pb",
     FAIRFACE_MODEL.name: "https://github.com/yakhyo/fairface-onnx/releases/download/weights/fairface.onnx",
@@ -44,7 +44,7 @@ COMMONS_API = "https://commons.wikimedia.org/w/api.php"
 
 DEFAULT_CONFIDENCE = 0.35
 LIVE_IMAGE_SIZE = 640
-STILL_IMAGE_SIZE = 960
+STILL_IMAGE_SIZE = 768
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024
 REFERENCE_TIMEOUT = 12
 
