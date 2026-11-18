@@ -340,7 +340,7 @@ def _hand_geometry(points: list[tuple[float, float]]) -> dict[str, Any]:
     gesture = None
     confidence = 0.0
     thumb_direction = None
-    if extended["thumb"] and other_folded:
+    if extended["thumb"] and not extended["index"] and other_folded:
         thumb_tip_y = points[THUMB_TIP][1]
         wrist_y = wrist[1]
         thumb_size = math.dist(wrist, points[THUMB_MCP]) or 1e-6

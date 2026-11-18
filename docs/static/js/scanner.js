@@ -2,6 +2,7 @@
 
 const overlayContext = els.overlay.getContext("2d");
 let lastLiveErrorAt = 0;
+let liveEdge = 640;
 
 function beginScan() {
   if (state.scanning) return null;
@@ -90,7 +91,7 @@ async function startCamera() {
     els.stageBadge.textContent = "LIVE";
     els.cameraStart.disabled = true;
     els.cameraStop.disabled = false;
-    els.cameraState.innerHTML = `<span class="dot"></span>Live · ${(settings.interval / 1000).toFixed(1)}s scan`;
+    els.cameraState.innerHTML = `<span class="dot"></span>Live scanning`;
     els.cameraState.classList.add("live");
     updateOverlaySize();
     startLiveLoop(120);
@@ -239,7 +240,7 @@ function captureFrameBlob(options = {}) {
   }
 
   const canvas = document.createElement("canvas");
-  const longEdge = options.manual ? 1280 : 768;
+  const longEdge = options.manual ? 1280 : liveEdge;
   const ratio = Math.min(1, longEdge / Math.max(width, height));
   canvas.width = Math.max(1, Math.round(width * ratio));
   canvas.height = Math.max(1, Math.round(height * ratio));
@@ -248,7 +249,7 @@ function captureFrameBlob(options = {}) {
   context.imageSmoothingQuality = "high";
   context.drawImage(els.camera, 0, 0, canvas.width, canvas.height);
   return new Promise((resolve) => {
-    canvas.toBlob((blob) => resolve(blob), "image/jpeg", options.manual ? 0.92 : 0.7);
+    canvas.toBlob((blob) => resolve(blob), "image/jpeg", options.manual ? 0.92 : 0.65);
   });
 }
 
@@ -292,7 +293,12 @@ async function runCameraScan(options = {}) {
     const blob = await captureFrameBlob({ manual: Boolean(options.manual) });
     if (!blob || epoch !== state.epoch) return null;
     const shouldSave = Boolean(options.manual) || (settings.autoSave && Date.now() - state.lastSaveAt > 30000);
+    const startedAt = performance.now();
     const result = await sendScan(blob, "camera", shouldSave);
+    // Slow links (tunnel upload) drop to 512 px; fast ones climb back to 640.
+    const elapsed = performance.now() - startedAt;
+    if (elapsed > 1500 && liveEdge > 512) liveEdge = 512;
+    else if (elapsed < 700 && liveEdge < 640) liveEdge = 640;
     if (epoch !== state.epoch || expectedMode !== state.mode) return null;
     applyScanResult(result);
     if (result.saved > 0) {
@@ -716,7 +722,7 @@ function applySettings(updateDescriptions = false) {
   els.scanConfidence.value = String(settings.confidence);
   els.scanConfidenceValue.textContent = `${settings.confidence}%`;
   if (state.cameraOn) {
-    els.cameraState.innerHTML = `<span class="dot"></span>Live · ${(settings.interval / 1000).toFixed(1)}s scan`;
+    els.cameraState.innerHTML = `<span class="dot"></span>Live scanning`;
   }
   if (updateDescriptions && state.result) renderDetections(state.result.detections || []);
   drawOverlay();

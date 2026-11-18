@@ -104,6 +104,7 @@ function backendMode(mode = state.mode) {
 }
 
 const PLACEHOLDER_IMAGE = "/static/img/reference-placeholder.svg";
+const assetUrl = (url) => url;
 
 const state = {
   view: "dashboard",

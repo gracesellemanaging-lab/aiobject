@@ -33,6 +33,9 @@ def _extra_objects(image: np.ndarray, confidence: float, live: bool) -> list[dic
         if not entry:
             continue
         x1, y1, x2, y2 = box.xyxy[0].detach().cpu().numpy().tolist()
+        # Tiny specks are the open-vocabulary model's main false positive.
+        if (x2 - x1) * (y2 - y1) < 0.003 * width * height:
+            continue
         found.append({
             "label": entry[0], "category": entry[1], "description": entry[2], "prompt": prompt,
             "confidence": float(box.conf[0].item()),
@@ -59,7 +62,7 @@ class ObjectScanner:
             else:
                 label = raw["raw"].replace("_", " ").title()
                 category = "Object"
-                description = "An object detected by the YOLOv8n model."
+                description = "An object detected by the YOLOv8s model."
             detections.append(make_detection(
                 label=label,
                 category=category,
@@ -67,7 +70,7 @@ class ObjectScanner:
                 bbox=raw["bbox"],
                 description=description,
                 reference_key=raw["raw"],
-                source="YOLOv8n · COCO 80",
+                source="YOLOv8s · COCO 80",
                 details={"coco_class": raw["raw"], "class_id": raw["class_id"]},
             ))
 

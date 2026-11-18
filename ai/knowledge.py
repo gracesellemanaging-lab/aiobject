@@ -238,17 +238,17 @@ GESTURE_INFO: dict[str, dict[str, Any]] = {
 # Values used to make the UI clearly communicate model limits.
 CAPABILITY_NOTES = {
     "person": "Man/woman and age ranges are uncertain AI estimates computed from visible facial features. They are not facts, exact ages or identity checks.",
-    "object": "Universal scanner uses YOLOv8n trained on the 80 COCO object classes. Objects outside this vocabulary are not claimed as recognized.",
+    "object": "Universal scanner uses YOLOv8s trained on the 80 COCO object classes. Objects outside this vocabulary are not claimed as recognized.",
     "fruit": "Fruit scanner combines YOLO localization with an ImageNet food classifier. Fruits outside its vocabulary (for example mango, grapes, watermelon, papaya or dragon fruit) are marked as unsupported instead of guessed.",
     "gesture": "Gestures and expressions are estimated from body, hand and facial landmarks. Temporal gestures need several live frames. Expressions do not reveal true emotions or personality.",
     "smart": "Smart Scan combines person, object, expression and age-range detection. Visual estimates are approximate and are labeled accordingly.",
 }
 
 SCANNER_META = {
-    "smart": {"title": "Smart Scan", "engine": "YOLOv8n + FairFace (age + gender) + MediaPipe Face", "note": CAPABILITY_NOTES["smart"]},
-    "person": {"title": "Person Detection", "engine": "YOLOv8n + FairFace (age + gender)", "note": CAPABILITY_NOTES["person"]},
-    "object": {"title": "Object Detection", "engine": "YOLOv8n (COCO) + YOLO-World (extra objects)", "note": CAPABILITY_NOTES["object"]},
-    "fruit": {"title": "Fruit Recognition", "engine": "YOLOv8n + MobileNetV3", "note": CAPABILITY_NOTES["fruit"]},
+    "smart": {"title": "Smart Scan", "engine": "YOLOv8s + FairFace (age + gender) + MediaPipe Face", "note": CAPABILITY_NOTES["smart"]},
+    "person": {"title": "Person Detection", "engine": "YOLOv8s + FairFace (age + gender)", "note": CAPABILITY_NOTES["person"]},
+    "object": {"title": "Object Detection", "engine": "YOLOv8s (COCO) + YOLO-World (extra objects)", "note": CAPABILITY_NOTES["object"]},
+    "fruit": {"title": "Fruit Recognition", "engine": "YOLOv8s + MobileNetV3", "note": CAPABILITY_NOTES["fruit"]},
     "gesture": {"title": "Gesture Scanner", "engine": "MediaPipe Pose · Hands · Face", "note": CAPABILITY_NOTES["gesture"]},
 }
 

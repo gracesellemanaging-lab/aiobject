@@ -43,7 +43,7 @@ class FruitScanner:
             chosen = base_info
             chosen_key = raw["raw"]
             chosen_confidence = raw["confidence"]
-            source = "YOLOv8n · COCO"
+            source = "YOLOv8s · COCO"
             note = None
             if candidate and candidate.get("label"):
                 same_label = base_info and candidate["label"].lower() == base_info["label"].lower()

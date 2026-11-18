@@ -43,7 +43,7 @@ WIKI_API = "https://en.wikipedia.org/w/api.php"
 COMMONS_API = "https://commons.wikimedia.org/w/api.php"
 
 DEFAULT_CONFIDENCE = 0.35
-LIVE_IMAGE_SIZE = 768
+LIVE_IMAGE_SIZE = 640
 STILL_IMAGE_SIZE = 960
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024
 REFERENCE_TIMEOUT = 12
