@@ -1,11 +1,9 @@
-// Browser-only mode: detection runs inside the page (TensorFlow.js COCO-SSD).
-// No Python server, tunnel or Hugging Face Space is needed.
-// To use a Python backend instead, set BROWSER_AI = false and API_BASE = "https://your-backend-url".
-window.BROWSER_AI = true;
-window.API_BASE = "";
+// URL of the hosted Python backend (Hugging Face Space, Render, etc.).
+// Example: window.API_BASE = "https://your-name-aiobject.hf.space";
+window.API_BASE = "https://scanned-customers-bookmarks-appeals.trycloudflare.com";
 
-// Friendly notice when neither browser mode nor a backend is configured.
-if (!window.BROWSER_AI && !window.API_BASE && /github\.io$/.test(location.hostname)) {
+// Friendly notice while the backend URL is not set (scanning needs the Python server).
+if (!window.API_BASE && /github\.io$/.test(location.hostname)) {
   document.addEventListener("DOMContentLoaded", () => {
     const bar = document.createElement("div");
     bar.textContent = "Backend not connected yet: the page works, but scanning needs the Python server. Set API_BASE in docs/config.js.";

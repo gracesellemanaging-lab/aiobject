@@ -12,9 +12,12 @@ EXTRA_OBJECTS: dict[str, tuple[str, str, str]] = {
     "earbuds charging case": ("Earbuds Case", "Electronics", "A small case that stores and charges wireless earbuds."),
     "headphones": ("Headphones", "Electronics", "Over-ear or on-ear audio headset."),
     "wallet": ("Wallet", "Accessories", "A small flat case for carrying cash and cards."),
+    "pen": ("Pen", "Stationery", "A writing instrument that uses ink."),
     "pencil": ("Pencil", "Stationery", "A writing instrument with a graphite core."),
     "key": ("Key", "Accessories", "A metal key used to open a lock."),
     "power bank": ("Power Bank", "Electronics", "A portable battery for charging devices."),
+    "phone charger": ("Charger", "Electronics", "A power adapter or charging cable."),
+    "usb cable": ("Cable", "Electronics", "A cable for charging or transferring data."),
     "eyeglasses": ("Eyeglasses", "Accessories", "Glasses worn to correct vision."),
     "wrist watch": ("Wrist Watch", "Accessories", "A watch worn on the wrist."),
     "calculator": ("Calculator", "Electronics", "A handheld device for arithmetic."),
@@ -23,8 +26,5 @@ EXTRA_OBJECTS: dict[str, tuple[str, str, str]] = {
     "padlock": ("Padlock", "Objects", "A portable lock with a shackle."),
 }
 
-from .focus_targets import FOCUS_PROMPTS  # noqa: E402
-
-# pen / charger / cable moved to focus_targets (ballpen, adapter, connector) with better prompts
-PROMPTS = list(dict.fromkeys(list(EXTRA_OBJECTS) + FOCUS_PROMPTS))
+PROMPTS = list(EXTRA_OBJECTS)
 WORLD_CONFIDENCE_CAP = 0.30
