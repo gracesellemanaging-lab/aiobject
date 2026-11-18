@@ -239,7 +239,7 @@ function captureFrameBlob(options = {}) {
   }
 
   const canvas = document.createElement("canvas");
-  const longEdge = options.manual ? 1280 : 640;
+  const longEdge = options.manual ? 1280 : 960;
   const ratio = Math.min(1, longEdge / Math.max(width, height));
   canvas.width = Math.max(1, Math.round(width * ratio));
   canvas.height = Math.max(1, Math.round(height * ratio));

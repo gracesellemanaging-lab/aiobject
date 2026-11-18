@@ -1,5 +1,5 @@
 // URL of the hosted Python backend (Hugging Face Space, Render, etc.).
-// Example: window.API_BASE = "https://submitted-signals-occurring-inflation.trycloudflare.com";
+// Example: window.API_BASE = "https://your-name-aiobject.hf.space";
 window.API_BASE = "https://ferry-text-beam-impressed.trycloudflare.com";
 
 // Friendly notice while the backend URL is not set (scanning needs the Python server).
