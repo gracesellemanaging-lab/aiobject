@@ -1,14 +1,16 @@
 {
-  "name": "AI Object Visualizer backend",
+  "name": "AI Object Visualizer",
   "image": "mcr.microsoft.com/devcontainers/python:3.11",
   "features": {
-    "ghcr.io/devcontainers/features/sshd:1": { "version": "latest" }
+    "ghcr.io/devcontainers/features/common-utils:2": {}
   },
-  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y libgl1 libglib2.0-0 libegl1 libgles2 && pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu && pip install --no-cache-dir -r requirements.txt",
-  "postStartCommand": "cd /workspaces/aiobject && (pkill -f 'python app.py' || true) && HOST=0.0.0.0 PORT=5000 nohup python app.py > /tmp/aiobject.log 2>&1 &",
+  "postCreateCommand": "python -m pip install --upgrade pip && pip install -r requirements.txt",
+  "postStartCommand": "HOST=0.0.0.0 PORT=5000 python app.py",
   "forwardPorts": [5000],
   "portsAttributes": {
-    "5000": { "label": "AI Object Visualizer API", "onAutoForward": "notify" }
-  },
-  "hostRequirements": { "cpus": 2, "memory": "8gb" }
+    "5000": {
+      "label": "AI Backend",
+      "onAutoForward": "notify"
+    }
+  }
 }
