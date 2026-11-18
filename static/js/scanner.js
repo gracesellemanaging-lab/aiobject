@@ -2,7 +2,8 @@
 
 const overlayContext = els.overlay.getContext("2d");
 let lastLiveErrorAt = 0;
-let liveEdge = 640;
+// Remote backends are latency bound: start live frames small, climb only on fast links.
+let liveEdge = (window.API_BASE || "").trim() ? 512 : 640;
 
 function beginScan() {
   if (state.scanning) return null;
