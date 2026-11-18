@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 _MODEL_KEYS = ("yolo", "faces", "fairface", "mediapipe", "classifier")
 _MODEL_LABELS = {
-    "yolo": "YOLOv8n object detector",
+    "yolo": "YOLOv8s object detector",
     "faces": "OpenCV face detector",
     "fairface": "FairFace age estimator",
     "mediapipe": "MediaPipe pose / hands / face",
